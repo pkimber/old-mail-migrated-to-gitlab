@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from example.tests.model_maker import make_enquiry
