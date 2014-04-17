@@ -25,8 +25,12 @@ class MailError(Exception):
 class Message(TimeStampedModel):
     """email messages to send."""
 
-    title = models.CharField(max_length=200)
+    subject = models.CharField(max_length=200)
     description = models.TextField()
+    # link to the object in the system which asked us to send the email.
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey()
 
     class Meta:
         ordering = ['created']
@@ -34,7 +38,7 @@ class Message(TimeStampedModel):
         verbose_name_plural = 'Mail messages'
 
     def __str__(self):
-        return '{}'.format(self.title)
+        return '{}'.format(self.subject)
 
 reversion.register(Message)
 
@@ -55,7 +59,7 @@ class Mail(TimeStampedModel):
     def __str__(self):
         return '{}: {}'.format(
             self.email,
-            self.message.title,
+            self.message.subject,
         )
 
 reversion.register(Mail)
