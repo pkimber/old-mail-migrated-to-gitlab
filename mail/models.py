@@ -34,6 +34,7 @@ class Message(TimeStampedModel):
 
     class Meta:
         ordering = ['created']
+        unique_together = ('object_id', 'content_type')
         verbose_name = 'Mail message'
         verbose_name_plural = 'Mail messages'
 
@@ -49,7 +50,7 @@ class Mail(TimeStampedModel):
     message = models.ForeignKey(Message)
     email = models.EmailField(blank=True)
     retry_count = models.IntegerField(blank=True, null=True)
-    email_sent = models.DateTimeField(blank=True, null=True)
+    sent = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         ordering = ['created']
