@@ -12,9 +12,12 @@ mail/management/__init__.py
 mail/management/commands/__init__.py
 mail/management/commands/init_app_mail.py
 mail/management/commands/mail_send.py
+mail/migrations/0001_initial.py
+mail/migrations/__init__.py
 mail/templates/mail/base.html
 mail/templates/mail/message_list.html
 mail/tests/__init__.py
+mail/tests/scenario.py
 mail/tests/test_management_command.py
 mail/tests/test_view_perm.py
 requirements/base.txt
