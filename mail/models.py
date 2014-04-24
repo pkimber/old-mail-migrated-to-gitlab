@@ -62,3 +62,22 @@ class Mail(TimeStampedModel):
         )
 
 reversion.register(Mail)
+
+
+class Template(TimeStampedModel):
+    """email template."""
+
+    title = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+    subject = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ('title',)
+        verbose_name = 'Template'
+        verbose_name_plural = 'Template'
+
+    def __str__(self):
+        return '{}'.format(self.title)
+
+reversion.register(Template)

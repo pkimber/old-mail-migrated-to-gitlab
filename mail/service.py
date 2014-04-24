@@ -7,13 +7,18 @@ from datetime import datetime
 
 from django.conf import settings
 from django.core import mail
+from django.utils.text import slugify
+
 from django_mailgun import MailgunAPIError
 
 from smtplib import SMTPException
 
+from base.tests.model_maker import clean_and_save
+
 from .models import (
     Mail,
     Message,
+    Template,
 )
 
 
@@ -46,6 +51,19 @@ def _send_mail(m):
 
 def init_app_mail():
     pass
+
+
+def init_template(slug, title):
+    slug=slugify(slug)
+    try:
+        template = Template.objects.get(slug=slug)
+        template.title = title
+        template.save()
+    except Template.DoesNotExist:
+        return clean_and_save(Template(**dict(
+            title=title,
+            slug=slug,
+        )))
 
 
 def queue_mail(content_object, email_addresses, subject, description):

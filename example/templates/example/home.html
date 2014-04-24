@@ -15,9 +15,15 @@
       <div class="pure-menu pure-menu-open pure-menu-horizontal">
         <ul>
           <li>
-            <a href="{% url 'mail.list' %}">
+            <a href="{% url 'mail.message.list' %}">
               <i class="fa fa-comments-o"></i>
-              List of messages
+              Messages
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'mail.template.list' %}">
+              <i class="fa fa-lightbulb-o"></i>
+              Templates
             </a>
           </li>
         </ul>

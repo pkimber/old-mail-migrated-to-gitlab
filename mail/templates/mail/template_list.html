@@ -1,0 +1,51 @@
+{% extends "mail/base.html" %}
+
+{% block title %}
+  Mail templates
+{% endblock title %}
+
+{% block sub_heading %}
+  Mail templates
+{% endblock sub_heading %}
+
+{% block content %}
+  <div class="pure-g-r">
+    <div class="pure-u-1">
+      <div class="l-box">
+        <table class="pure-table pure-table-bordered">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in object_list %}
+              <tr valign="top">
+                <td>
+                  <a href="{% url 'mail.template.update' e.slug %}">
+                    <i class="fa fa-edit"></i>
+                    {{ e.title }}
+                  </a>
+                  <br />
+                  <small>{{ e.slug }}</small>
+                </td>
+                <td>
+                  {% if e.subject %}
+                    <strong>{{ e.subject }}</strong>
+                  {% endif %}
+                  {% if e.subject and e.description %}
+                    <br />
+                  {% endif %}
+                  {% if e.description %}
+                    {{ e.description|urlize|linebreaksbr }}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

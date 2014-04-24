@@ -1,7 +1,11 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.views.generic import ListView
+from django.core.urlresolvers import reverse
+from django.views.generic import (
+    ListView,
+    UpdateView,
+)
 
 from braces.views import (
     LoginRequiredMixin,
@@ -10,10 +14,30 @@ from braces.views import (
 
 from base.view_utils import BaseMixin
 
-from .models import Message
+from .forms import TemplateForm
+from .models import (
+    Message,
+    Template,
+)
 
 
 class MessageListView(
         LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
 
     model = Message
+
+
+class TemplateListView(
+        LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
+
+    model = Template
+
+
+class TemplateUpdateView(
+        LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, UpdateView):
+
+    form_class = TemplateForm
+    model = Template
+
+    def get_success_url(self):
+        return reverse('mail.template.list')

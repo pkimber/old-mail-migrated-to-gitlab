@@ -1,0 +1,17 @@
+{% extends "mail/base.html" %}
+
+{% block sub_title %}
+  Template update
+{% endblock sub_title %}
+
+{% block sub_heading %}
+  {{ object.title }}
+{% endblock sub_heading %}
+
+{% block content %}
+  <div class="pure-g-r">
+    <div class="pure-u-1">
+      {% include '_form.html' with legend='Template' %}
+    </div>
+  </div>
+{% endblock content %}
