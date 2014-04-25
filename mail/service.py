@@ -5,6 +5,8 @@ import logging
 
 from datetime import datetime
 
+from django import template
+
 from django.conf import settings
 from django.core import mail
 from django.utils.text import slugify
@@ -38,6 +40,12 @@ def _process_mail(primary_keys):
         m.save()
 
 
+def _render(text, context):
+    t = template.Template(text)
+    c = template.Context(context)
+    return t.render(c)
+
+
 def _send_mail(m):
     """Send message to a list of email addresses."""
     mail.send_mail(
@@ -64,6 +72,15 @@ def init_template(slug, title):
             title=title,
             slug=slug,
         )))
+
+
+def mail_template_render(template_slug, context):
+    description = None
+    subject = None
+    template = Template.objects.get(slug=template_slug)
+    description = _render(template.description, context)
+    subject = _render(template.subject, context)
+    return subject, description
 
 
 def queue_mail(content_object, email_addresses, subject, description):
