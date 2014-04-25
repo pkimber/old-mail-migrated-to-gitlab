@@ -11,6 +11,11 @@
 {% block content %}
   <div class="pure-g-r">
     <div class="pure-u-1">
+      {% if object.help_text %}
+        <div class="l-box">
+          {{ object.help_text|linebreaksbr }}
+        </div>
+      {% endif %}
       {% include '_form.html' with legend='Template' %}
     </div>
   </div>

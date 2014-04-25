@@ -7,9 +7,9 @@ from django.conf.urls import (
 )
 
 from .views import (
+    MailTemplateListView,
+    MailTemplateUpdateView,
     MessageListView,
-    TemplateListView,
-    TemplateUpdateView,
 )
 
 
@@ -20,11 +20,11 @@ urlpatterns = patterns(
         name='mail.message.list'
         ),
     url(regex=r'^template/$',
-        view=TemplateListView.as_view(),
+        view=MailTemplateListView.as_view(),
         name='mail.template.list'
         ),
     url(regex=r'^template/(?P<slug>[-\w\d]+)/update/$',
-        view=TemplateUpdateView.as_view(),
+        view=MailTemplateUpdateView.as_view(),
         name='mail.template.update'
         ),
 )

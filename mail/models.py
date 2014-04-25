@@ -31,7 +31,7 @@ class Message(TimeStampedModel):
     content_object = generic.GenericForeignKey()
 
     class Meta:
-        ordering = ['created']
+        ordering = ['-created']
         unique_together = ('object_id', 'content_type')
         verbose_name = 'Mail message'
         verbose_name_plural = 'Mail messages'
@@ -64,11 +64,16 @@ class Mail(TimeStampedModel):
 reversion.register(Mail)
 
 
-class Template(TimeStampedModel):
-    """email template."""
+class MailTemplate(TimeStampedModel):
+    """email template.
 
-    title = models.CharField(max_length=100)
+    The 'description' should include details of the available context
+    variables.
+    """
+
     slug = models.SlugField(unique=True)
+    title = models.CharField(max_length=100)
+    help_text = models.TextField(blank=True)
     subject = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
 
@@ -80,4 +85,4 @@ class Template(TimeStampedModel):
     def __str__(self):
         return '{}'.format(self.title)
 
-reversion.register(Template)
+reversion.register(MailTemplate)

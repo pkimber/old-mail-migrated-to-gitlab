@@ -14,30 +14,30 @@ from braces.views import (
 
 from base.view_utils import BaseMixin
 
-from .forms import TemplateForm
+from .forms import MailTemplateForm
 from .models import (
     Message,
-    Template,
+    MailTemplate,
 )
+
+
+class MailTemplateListView(
+        LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
+
+    model = MailTemplate
+
+
+class MailTemplateUpdateView(
+        LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, UpdateView):
+
+    form_class = MailTemplateForm
+    model = MailTemplate
+
+    def get_success_url(self):
+        return reverse('mail.template.list')
 
 
 class MessageListView(
         LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
 
     model = Message
-
-
-class TemplateListView(
-        LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
-
-    model = Template
-
-
-class TemplateUpdateView(
-        LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, UpdateView):
-
-    form_class = TemplateForm
-    model = Template
-
-    def get_success_url(self):
-        return reverse('mail.template.list')

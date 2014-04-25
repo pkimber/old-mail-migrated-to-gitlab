@@ -17,8 +17,7 @@
             <tr>
               <th>ID</th>
               <th>Created</th>
-              <th>Title</th>
-              <th>Description</th>
+              <th>Message</th>
             </tr>
           </thead>
           <tbody>
@@ -29,11 +28,21 @@
                 </td>
                 <td>
                   {{ e.created|date:"D jS M Y, H:ia" }}
+                  {% for m in e.mail_set.all %}
+                    <br />
+                    <small>
+                      {{ m.email }}
+                      {% if m.sent %}
+                        ({{ m.sent|date:"d/m/Y H:i" }})
+                      {% else %}
+                        (pending}
+                      {% endif %}
+                    </small>
+                  {% endfor %}
                 </td>
                 <td>
-                  {{ e.title }}
-                </td>
-                <td>
+                  <strong>{{ e.subject }}</strong>
+                  <br />
                   {{ e.description|urlize|linebreaksbr }}
                 </td>
               </tr>

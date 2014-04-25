@@ -5,10 +5,12 @@ import logging
 
 from datetime import datetime
 
-from django import template
-
 from django.conf import settings
 from django.core import mail
+from django.template import (
+    Context,
+    Template,
+)
 from django.utils.text import slugify
 
 from django_mailgun import MailgunAPIError
@@ -19,8 +21,8 @@ from base.tests.model_maker import clean_and_save
 
 from .models import (
     Mail,
+    MailTemplate,
     Message,
-    Template,
 )
 
 
@@ -41,8 +43,8 @@ def _process_mail(primary_keys):
 
 
 def _render(text, context):
-    t = template.Template(text)
-    c = template.Context(context)
+    t = Template(text)
+    c = Context(context)
     return t.render(c)
 
 
@@ -61,23 +63,25 @@ def init_app_mail():
     pass
 
 
-def init_template(slug, title):
+def init_mail_template(slug, title, help_text):
     slug=slugify(slug)
     try:
-        template = Template.objects.get(slug=slug)
+        template = MailTemplate.objects.get(slug=slug)
         template.title = title
+        template.help_text = help_text
         template.save()
-    except Template.DoesNotExist:
-        return clean_and_save(Template(**dict(
+    except MailTemplate.DoesNotExist:
+        return clean_and_save(MailTemplate(**dict(
             title=title,
             slug=slug,
+            help_text=help_text,
         )))
 
 
 def mail_template_render(template_slug, context):
     description = None
     subject = None
-    template = Template.objects.get(slug=template_slug)
+    template = MailTemplate.objects.get(slug=template_slug)
     description = _render(template.description, context)
     subject = _render(template.subject, context)
     return subject, description
