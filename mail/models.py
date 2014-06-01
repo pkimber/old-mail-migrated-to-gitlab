@@ -25,6 +25,7 @@ class Message(TimeStampedModel):
 
     subject = models.CharField(max_length=200)
     description = models.TextField()
+    is_html = models.BooleanField(default=False)
     # link to the object in the system which asked us to send the email.
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
@@ -49,6 +50,7 @@ class Mail(TimeStampedModel):
     email = models.EmailField(blank=True)
     retry_count = models.IntegerField(blank=True, null=True)
     sent = models.DateTimeField(blank=True, null=True)
+    sent_response_code = models.CharField(max_length=256, blank=True, null=True)
 
     class Meta:
         ordering = ['created']
@@ -64,6 +66,24 @@ class Mail(TimeStampedModel):
 reversion.register(Mail)
 
 
+class MailField(models.Model):
+    mail = models.ForeignKey(Mail)
+    key = models.CharField(max_length=100)
+    value = models.CharField(max_length=256)
+
+    class Meta:
+        verbose_name = 'Mail Field'
+        verbose_name_plural = 'Mail Field'
+
+    def __str__(self):
+        return '{}: {}'.format(
+            self.mail.email,
+            self.key
+        )
+
+reversion.register(MailField)
+
+
 class MailTemplate(TimeStampedModel):
     """email template.
 
@@ -74,6 +94,7 @@ class MailTemplate(TimeStampedModel):
     slug = models.SlugField(unique=True)
     title = models.CharField(max_length=100)
     help_text = models.TextField(blank=True)
+    is_html = models.BooleanField(default=False)
     subject = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
 

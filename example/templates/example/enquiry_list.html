@@ -1,0 +1,44 @@
+{% extends "mail/base.html" %}
+
+{% block title %}
+  Mail messages
+{% endblock title %}
+
+{% block sub_heading %}
+  Mail messages
+{% endblock sub_heading %}
+
+{% block content %}
+  <div class="pure-g-r">
+    <div class="pure-u-1">
+      <div class="l-box">
+        <table class="pure-table pure-table-bordered">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email Address</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in object_list %}
+              <tr valign="top">
+                <td>
+                  {{ e.pk }}
+                </td>
+                <td>
+                  {{ e.email }}
+                </td>
+                <td>
+                  <strong>{{ e.subject }}</strong>
+                  <br />
+                  {{ e.description|urlize|linebreaksbr }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

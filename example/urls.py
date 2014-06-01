@@ -13,10 +13,18 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.core.urlresolvers import reverse_lazy
 from django.views.generic import RedirectView
 
-from .views import HomeView
+from .views import (
+    HomeView,
+    EnquiryListView,
+)
+
+# Admin interface for djrill
+from djrill import DjrillAdminSite
+
+admin.site = DjrillAdminSite()
+#end Admin interface for djrill
 
 admin.autodiscover()
-
 
 urlpatterns = patterns(
     '',
@@ -32,6 +40,10 @@ urlpatterns = patterns(
         ),
     url(regex=r'^mail/',
         view=include('mail.urls')
+        ),
+    url(regex=r'^enquiry/',
+        view=EnquiryListView.as_view(),
+        name='example.enquiry.list'
         ),
     url(r'^home/user/$',
         view=RedirectView.as_view(url=reverse_lazy('project.home')),

@@ -143,6 +143,7 @@ DJANGO_APPS = (
 THIRD_PARTY_APPS = (
     'reversion',
     'south',
+    'djrill',
 )
 
 LOCAL_APPS = (
@@ -201,3 +202,9 @@ MAILGUN_SERVER_NAME = get_env_variable("MAILGUN_SERVER_NAME")
 # https://github.com/johnsensible/django-sendfile
 SENDFILE_BACKEND = 'sendfile.backends.development'
 SENDFILE_ROOT = 'media-private'
+
+MANDRILL_API_KEY = get_env_variable("MANDRILL_API_KEY")
+
+MANDRILL_USER_NAME = get_env_variable("MANDRILL_USER_NAME")
+
+EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
