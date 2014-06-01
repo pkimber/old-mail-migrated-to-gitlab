@@ -41,6 +41,7 @@ def create_email_ack_template():
             'You can add the following variables to the template:\n'
             '*|BODY|* The body of the original enquiry\n'
             '*|SUBJECT|* The subject of the original enquiry\n'
+            '*|DATE|* The date of the original enquiry\n'
         )
     )
     template.subject='Re: *|SUBJECT|*'

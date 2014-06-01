@@ -33,9 +33,13 @@
                     <small>
                       {{ m.email }}
                       {% if m.sent %}
-                        ({{ m.sent|date:"d/m/Y H:i" }})
+                        ({{ m.sent|date:"d/m/Y H:i" }}
+                        {% if m.sent_response_code %}
+                          - {{ m.sent_response_code}}
+                        {% endif %}
+                        )
                       {% else %}
-                        (pending}
+                        (pending)
                       {% endif %}
                     </small>
                   {% endfor %}
@@ -43,7 +47,9 @@
                 <td>
                   <strong>{{ e.subject }}</strong>
                   <br />
-                  {{ e.description|urlize|linebreaksbr }}
+                  {% autoescape off %}
+                    {{ e.description|urlize|linebreaksbr }}
+                  {% endautoescape off %}
                 </td>
               </tr>
             {% endfor %}
