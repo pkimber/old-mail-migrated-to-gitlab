@@ -1,10 +1,13 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
-from mail.service import init_mail_template
-
-from mail.service import queue_mail
 from mail.models import MailTemplate
+from mail.service import (
+    init_mail_template,
+    mail_template_render,
+    queue_mail,
+)
+
 from example.models import Enquiry
 from example.base import get_env_variable
 
@@ -31,6 +34,7 @@ def default_scenario_mail():
     create_email_ack_template()
     queue_enquiry_acknowledgement()
     queue_enquiry_ack_with_copy()
+    queue_enquiry_hello()
 
 
 def create_email_ack_template():
@@ -48,7 +52,7 @@ def create_email_ack_template():
     template.description= (
         "<style>.body {padding: 10px; border: 1px solid grey;"
         "background-color: #F8ECE0;} </style>"
-        "<h2>Re: *|SUBJECT|*</h2>"
+        "<h2>*|SUBJECT|*</h2>"
         "<p>Thank you for writing to us on *|DATE|*.  We've noted your enquiry</p>"
         "<p><div class='body'><pre>*|BODY|*</pre></div></p>"
         "<p>We will reply to you as soon as possible</p>"
@@ -74,10 +78,24 @@ def create_enquiry():
     return e
 
 
+def queue_enquiry_hello(enq=None):
+    if (enq == None):
+        enq = create_enquiry()
+
+    context = {'name': 'Fred Bloggs', 'title': 'Okehamption'}
+
+    subject, description = mail_template_render('hello', context)
+    queue_mail(
+        enq,
+        [enq.email],
+        subject,
+        description,
+    )
+
 def queue_enquiry_acknowledgement(enq=None):
     template = MailTemplate.objects.get(slug='enquiry_acknowledgement')
 
-    if (enq == None):
+    if (ddenq == None):
         enq = create_enquiry()
 
     dFields = dict(
