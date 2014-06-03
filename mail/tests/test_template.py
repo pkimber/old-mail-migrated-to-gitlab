@@ -3,7 +3,11 @@ from __future__ import unicode_literals
 
 from django.test import TestCase
 
-from mail.models import MailTemplate
+from mail.models import (
+    MailTemplate,
+    TEMPLATE_TYPE_DJANGO,
+    TEMPLATE_TYPE_MANDRILL,
+)
 from mail.service import (
     init_mail_template,
     mail_template_render,
@@ -16,12 +20,25 @@ class TestMailTemplate(TestCase):
         init_mail_template(
             'hello',
             'Welcome to our mailing list.',
-            "You can add the '{{ name }}' variable to this template."
+            "You can add the '{{ name }}' variable to this template.",
+            False,
+            TEMPLATE_TYPE_DJANGO,
         )
 
     def test_init_template_update(self):
-        init_mail_template('hello', 'Welcome to our mailing list.', '')
-        init_mail_template('hello', 'Welcome...', '')
+        init_mail_template(
+                'hello',
+                'Welcome to our mailing list.',
+                '',
+                False,
+                TEMPLATE_TYPE_DJANGO
+        )
+        init_mail_template(
+                'hello',
+                'Welcome...',
+                '', False,
+                TEMPLATE_TYPE_DJANGO
+        )
         template = MailTemplate.objects.get(slug='hello')
         self.assertEqual(template.title, 'Welcome...')
 
@@ -33,7 +50,9 @@ class TestMailTemplate(TestCase):
                 "You can add the following variables to the template:\n"
                 "'{{ name }}' name of the customer.\n"
                 "'{{ title }}' name of the village."
-            )
+            ),
+            False,
+            TEMPLATE_TYPE_DJANGO,
         )
         template.subject = 'Hello {{ name }}'
         template.description = 'Welcome to {{ title }}'

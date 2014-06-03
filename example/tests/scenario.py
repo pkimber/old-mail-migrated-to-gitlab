@@ -1,40 +1,74 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
-from mail.models import MailTemplate
+from mail.models import (
+    MailTemplate,
+    TEMPLATE_TYPE_DJANGO,
+    TEMPLATE_TYPE_MANDRILL,
+)
+
 from mail.service import (
     init_mail_template,
     mail_template_render,
     queue_mail,
+    queue_mail_message,
+    TEMPLATE_TYPE_MANDRILL,
 )
 
 from example.models import Enquiry
 from example.base import get_env_variable
 
 def default_scenario_mail():
-    init_mail_template(
-        'goodbye',
-        'Sorry to see you go...',
-        (
-            "You can add the following variables to the template:\n"
-            "{{ name }} name of the user\n"
-            "{{ age }} age of the customer."
-        )
-    )
-    template = init_mail_template(
+    create_hello_template()
+    create_goodbye_template()
+    create_email_ack_template()
+    queue_enquiry_acknowledgement()
+    queue_enquiry_ack_with_copy()
+    queue_enquiry_hello()
+
+
+def create_hello_template():
+    hello_template = init_mail_template(
         'hello',
         'Welcome to our mailing list.',
         (
             "You can add the following variables to the template:\n"
             "{{ name }} name of the customer.\n"
             "{{ title }} name of the village."
-        )
+        ),
+        is_html=False,
+        template_type=TEMPLATE_TYPE_DJANGO,
     )
 
-    create_email_ack_template()
-    queue_enquiry_acknowledgement()
-    queue_enquiry_ack_with_copy()
-    queue_enquiry_hello()
+    hello_template.subject = "hello {{ name }}"
+    hello_template.description = (
+        "Dear {{name}},\n"
+        "Thank you for subscribing to the {{title}} news letter\n"
+        "Best wishes\n\n"
+        "The {{ title }} team"
+    )
+    hello_template.save()
+
+def create_goodbye_template():
+    goodbye_template = init_mail_template(
+        'goodbye',
+        'Sorry to see you go...',
+        (
+            "You can add the following variables to the template:\n"
+            "{{ name }} name of the user\n"
+            "{{ age }} age of the customer."
+        ),
+        is_html=False,
+        template_type=TEMPLATE_TYPE_DJANGO,
+    )
+
+    goodbye_template.subject = "goodbye {{ name }}"
+    goodbye_template.description = (
+        "Dear {{name}},\n"
+        "Sorry you no longer wish to receive the {{title}} news letter\n"
+        "Goodbye and best wishes"
+    )
+    goodbye_template.save()
 
 
 def create_email_ack_template():
@@ -46,7 +80,9 @@ def create_email_ack_template():
             '*|BODY|* The body of the original enquiry\n'
             '*|SUBJECT|* The subject of the original enquiry\n'
             '*|DATE|* The date of the original enquiry\n'
-        )
+        ),
+        is_html=True,
+        template_type=TEMPLATE_TYPE_MANDRILL,
     )
     template.subject='Re: *|SUBJECT|*'
     template.description= (
@@ -92,13 +128,25 @@ def queue_enquiry_hello(enq=None):
         description,
     )
 
+def queue_enquiry_goodbye(enq=None):
+    if (enq == None):
+        enq = create_enquiry()
+
+    context = dict({enq.email: {'name': 'Fred Bloggs', 'title': 'Okehamption'}})
+
+    queue_mail_message(
+        enq,
+        'goodbye',
+        context,
+    )
+
 def queue_enquiry_acknowledgement(enq=None):
     template = MailTemplate.objects.get(slug='enquiry_acknowledgement')
 
-    if (ddenq == None):
+    if (enq == None):
         enq = create_enquiry()
 
-    dFields = dict(
+    content_data = dict(
         {
             enq.email: {
                 "SUBJECT": "Re: " + enq.subject,
@@ -108,13 +156,10 @@ def queue_enquiry_acknowledgement(enq=None):
         }
     )
 
-    queue_mail(
+    queue_mail_message(
         enq,
-        [enq.email],
-        template.subject,
-        template.description,
-        is_html=True,
-        fields=dFields
+        template,
+        content_data=content_data
     )
 
 def queue_enquiry_ack_with_copy(enq=None):
@@ -149,10 +194,11 @@ def queue_enquiry_ack_with_copy(enq=None):
     queue_mail(
         enq,
         email_addresses,
-        "Re: " + enq.subject,
+        template.subject,
         template.description,
         is_html=True,
-        fields=dFields
+        fields=dFields,
+        template_type=TEMPLATE_TYPE_MANDRILL,
     )
 
 

@@ -1,5 +1,7 @@
-from mail.service import send_messages_via_mandrill
+from mail.service import (
+    send_mail,
+)
 
-send_messages_via_mandrill()
+send_mail()
 
 

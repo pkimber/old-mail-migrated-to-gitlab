@@ -9,6 +9,8 @@ import reversion
 
 from base.model_utils import TimeStampedModel
 
+TEMPLATE_TYPE_DJANGO = 'django'
+TEMPLATE_TYPE_MANDRILL = 'mandrill'
 
 class MailError(Exception):
 
@@ -25,6 +27,7 @@ class Message(TimeStampedModel):
 
     subject = models.CharField(max_length=200)
     description = models.TextField()
+    template_type = models.CharField(max_length=32, default=TEMPLATE_TYPE_DJANGO)
     is_html = models.BooleanField(default=False)
     # link to the object in the system which asked us to send the email.
     content_type = models.ForeignKey(ContentType)
@@ -83,7 +86,6 @@ class MailField(models.Model):
 
 reversion.register(MailField)
 
-
 class MailTemplate(TimeStampedModel):
     """email template.
 
@@ -95,6 +97,7 @@ class MailTemplate(TimeStampedModel):
     title = models.CharField(max_length=100)
     help_text = models.TextField(blank=True)
     is_html = models.BooleanField(default=False)
+    template_type = models.CharField(max_length=32, default=TEMPLATE_TYPE_DJANGO)
     subject = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
 
