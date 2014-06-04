@@ -16,6 +16,7 @@ mail/management/commands/mail_send.py
 mail/migrations/0001_initial.py
 mail/migrations/0002_auto__add_template.py
 mail/migrations/0003_auto__del_template__add_mailtemplate.py
+mail/migrations/0004_auto__add_mailfield__add_field_mailtemplate_is_html__add_field_mail_se.py
 mail/migrations/__init__.py
 mail/templates/mail/base.html
 mail/templates/mail/mailtemplate_form.html
