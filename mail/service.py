@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 
 import logging
 
-from datetime import datetime
-
 from django.conf import settings
 from django.core import mail
 from django.db import transaction
@@ -12,6 +10,7 @@ from django.template import (
     Context,
     Template,
 )
+from django.utils import timezone
 from django.utils.text import slugify
 
 from django_mailgun import MailgunAPIError
@@ -24,6 +23,7 @@ from base.tests.model_maker import clean_and_save
 
 from .models import (
     Mail,
+    MailError,
     MailField,
     MailTemplate,
     Message,
@@ -41,12 +41,28 @@ def _get_merge_vars(mail_item):
     )
 
 
-def _process_mail(primary_keys):
+def _render(text, context):
+    t = Template(text)
+    c = Context(context)
+    return t.render(c)
+
+
+def _simple_mail_process():
+    primary_keys = [
+        e.pk for e in Mail.objects.filter(
+            sent__isnull=True,
+            message__template__isnull=True,
+        )
+    ]
+    _simple_mail_send(primary_keys)
+
+
+def _simple_mail_send(primary_keys):
     for pk in primary_keys:
         m = Mail.objects.get(pk=pk)
         try:
-            _send_django_format_message(m)
-            m.sent = datetime.now()
+            _simple_mail_send_message(m)
+            m.sent = timezone.now()
         except (SMTPException, MailgunAPIError) as e:
             logger.error(e.message)
             retry_count = m.retry_count or 0
@@ -54,60 +70,12 @@ def _process_mail(primary_keys):
         m.save()
 
 
-def _render(text, context):
-    t = Template(text)
-    c = Context(context)
-    return t.render(c)
-
-
-def _send_django_format_mail():
-    primary_keys = [
-        e.pk for e in Mail.objects.filter(
-            sent__isnull=True,
-            message__template_type=TEMPLATE_TYPE_DJANGO,
-        )
-    ]
-
-    print ("Message IDs:" + str(primary_keys))
-    _process_mail(primary_keys)
-
-
-def _send_mandrill_format_mail():
-    primary_keys = []
-    last_id = 0
-
-    # get a list of message - Have to use this convoluted method because
-    # sqlite does not support select distinct
-    for mail_item in Mail.objects.filter(
-            sent__isnull=True,
-            message__template_type=TEMPLATE_TYPE_MANDRILL
-        ).order_by('message'):
-        if (last_id != mail_item.message.pk):
-            primary_keys.append(mail_item.message.pk)
-            last_id = mail_item.message.pk
-
-    print ("Message IDs: " + str(primary_keys))
-    for pk in primary_keys:
-        m = Message.objects.get(pk=pk)
-        _send_mandrill_format_message(m)
-
-def _send_django_format_message(m):
+def _simple_mail_send_message(m):
     """Send message to a list of email addresses."""
-    #print ("Doing send_django_format_mail :-" + 
-    #        "\n    User: " + settings.MANDRILL_USER_NAME + 
-    #        "\n    Email: " + m.email + 
-    #        "\n    Subject: " + m.message.subject +
-    #        "\n    Description: " + m.message.description)
-
-    if (m.message.template_type == TEMPLATE_TYPE_DJANGO):
-        merge_vars = _get_merge_vars(m)
-        subject = _render(m.message.subject, merge_vars)
-        body = _render(m.message.description, merge_vars)
-
-    if (settings.MANDRILL_USER_NAME and settings.MANDRILL_API_KEY):
+    if settings.MANDRILL_USER_NAME and settings.MANDRILL_API_KEY:
         mail.send_mail(
-            subject,
-            body,
+            m.message.subject,
+            m.message.description,
             'notify@{}'.format(settings.MAILGUN_SERVER_NAME),
             [m.email,],
             fail_silently=False,
@@ -124,63 +92,110 @@ def _send_django_format_message(m):
         )
 
 
-def _send_mandrill_format_message(m):
+def _template_mail_process():
+    template_types = (
+        TEMPLATE_TYPE_DJANGO,
+        TEMPLATE_TYPE_MANDRILL,
+    )
+    qs = Mail.objects.filter(
+        sent__isnull=True,
+        message__template__template_type__in=template_types,
+    ).order_by(
+        'message'
+    )
+    message_keys = set()
+    for item in qs:
+        message_keys.add(item.message.pk)
+    _template_mail_send(message_keys)
+
+
+def _template_mail_send(message_keys):
+    for pk in message_keys:
+        message = Message.objects.get(pk=pk)
+        if message.template.template_type == TEMPLATE_TYPE_DJANGO:
+            _template_mail_send_django(message)
+        elif message.template.template_type == TEMPLATE_TYPE_MANDRILL:
+            _template_mail_send_mandrill(message)
+        else:
+            raise MailError(
+                "Unknown mail template type: '{}'".format(
+                    message.template.template_type
+                )
+            )
+
+
+def _template_mail_send_django(message):
+    if not settings.MAILGUN_SERVER_NAME:
+        raise MailError("Mailgun server name is not correctly configured")
+    for mail in message.mail_set.all():
+        try:
+            merge_vars = _get_merge_vars(mail)
+            subject, description = _mail_template_render(
+                message.template_slug,
+                merge_vars,
+            )
+            msg = mail.EmailMultiAlternatives(
+                subject=subject,
+                from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
+                to=mail.email,
+            )
+            if message.template.is_html:
+                msg.attach_alternative(body, "text/html")
+                msg.auto_text = True
+            else:
+                msg.body = description
+            msg.send()
+        except (SMTPException, MailgunAPIError) as e:
+            logger.error(e.message)
+            mail.retry_count = (mail.retry_count or 0) + 1
+            mail.save()
+
+
+def _template_mail_send_mandrill(m):
     """ Send message to a list of email addresses."""
-
-    if ((settings.MANDRILL_USER_NAME and settings.MANDRILL_API_KEY) == False):
-        raise MandrillAPIError("Mandrill user name and password are not correctly configured")
-
-    if (settings.MAILGUN_SERVER_NAME == None):
-        raise MailgunAPIError("Mailgun server name is not correctly configured")
-
+    if not settings.MANDRILL_USER_NAME and settings.MANDRILL_API_KEY:
+        raise MailError(
+            "Mandrill user name and password are not correctly configured"
+        )
+    mail_items = m.mail_set.all()
     try:
-        mail_items = m.mail_set.all()
-
         email_addresses = [
             mail_item.email for mail_item in mail_items
         ]
-
         msg = mail.EmailMultiAlternatives(
-            subject = m.subject,
-            from_email = 'notify@{}'.format(settings.MAILGUN_SERVER_NAME),
-            to = email_addresses,
+            subject=m.subject,
+            from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
+            to=email_addresses,
         )
-
         msg.metadata = {'user_id': settings.MANDRILL_USER_NAME},
-
         if (m.is_html):
             msg.attach_alternative(m.description, "text/html")
             msg.auto_text = True
         else:
             msg.body = m.description
-
         merge_vars = dict()
-
         for mail_item in mail_items:
             user_vars = _get_merge_vars(mail_item)
-
-            if (len(user_vars) > 0):
+            if len(user_vars):
                 merge_vars.update ({mail_item.email : user_vars})
-
-        if (len(merge_vars) > 0):
+        if len(merge_vars):
             msg.merge_vars = merge_vars
-
+        msg.template_name = m.template.slug
         msg.send()
-
         for resp in msg.mandrill_response:
             mi = mail_items.filter(email=resp['email'])[0]
-
             if (resp['status'] == 'sent'):
-                mi.sent = datetime.now()
+                mi.sent = timezone.now()
                 mi.sent_response_code = resp['_id']
             else:
                 mi.retry_count = (mi.retry_count or 0) + 1
                 logger.error("Failed to send message to " + resp.email +
                     ": " + resp.reject_reason)
-
             mi.save()
-    except (SMTPException, MailgunAPIError, MandrillAPIError) as e:
-        logger.error(e.message)
+    except (SMTPException, MandrillAPIError) as e:
+        import ipdb
+        ipdb.set_trace()
+        logger.error(e)
         for mi in mail_items:
             mi.retry_count = (mi.retry_count or 0) + 1
             mi.save()
@@ -215,7 +230,7 @@ def init_mail_template(slug, title, help_text, is_html, template_type):
     return template
 
 
-def mail_template_render(template_slug, context):
+def _mail_template_render(template_slug, context):
     description = None
     subject = None
     template = MailTemplate.objects.get(slug=template_slug)
@@ -225,16 +240,20 @@ def mail_template_render(template_slug, context):
 
 
 @transaction.atomic
-def queue_mail(content_object, email_addresses, subject, description, template_type=TEMPLATE_TYPE_DJANGO, is_html=False, fields=None):
-    """Add a mail message to the models."""
+def queue_mail_message(content_object, email_addresses, subject, description, is_html=False):
+    """queue a mail message for one or more email addresses.
+
+    The subject and description are fully formed i.e. this function does not
+    do any templating.
+
+    """
+
     message = Message(**dict(
         content_object=content_object,
         subject=subject,
         description=description,
-        template_type=template_type,
         is_html=is_html,
     ))
-
     message.save()
     for email in email_addresses:
         mail = Mail(**dict(
@@ -242,60 +261,43 @@ def queue_mail(content_object, email_addresses, subject, description, template_t
             message=message,
         ))
         mail.save()
-
-        if (fields):
-            mail_fields = fields.get(email, None)
-            if (mail_fields):
-                for key in mail_fields.keys():
-                    value = mail_fields.get(key, None)
-
-                    if (value):
-                        mf = MailField(**dict(
-                            mail = mail,
-                            key = key,
-                            value = value
-                        ))
-                        mf.save()
     return message
 
 
 @transaction.atomic
-def queue_mail_message(content_object, template, content_data):
-    """Add a mail message to the models."""
+def queue_mail_template(content_object, template_slug, content_data):
+    """Queue a mail message.  The message will be rendered using the template.
 
-    # check if we've been passed the slug and if so get the template
-    if (isinstance (template, str)):
-        template = get_mail_template(template)
+    When the mail is sent, the template will be found and rendered using
+    with Django or Mandrill.
 
+    The content data is a dict containing email addresses and optionally a
+    key, value dict for field values.
+    """
+
+    template = get_mail_template(template_slug)
     message = Message(**dict(
         content_object=content_object,
         subject=template.subject,
-        description=template.description,
-        is_html=template.is_html,
-        template_type=template.template_type,
+        template=template,
     ))
-
     message.save()
-
     for email in content_data.keys():
         mail = Mail(**dict(
             email=email,
             message=message,
         ))
         mail.save()
-
         email_data = content_data[email]
-
-        if (email_data):
+        if email_data:
             for key in email_data.keys():
                 value = email_data.get(key, None)
-
-                if (value):
+                if value:
                     mf = MailField(**dict(mail=mail, key=key, value=value))
                     mf.save()
     return message
 
 
 def send_mail():
-    _send_mandrill_format_mail()
-    _send_django_format_mail()
+    _simple_mail_process()
+    _template_mail_process()

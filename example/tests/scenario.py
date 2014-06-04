@@ -9,14 +9,14 @@ from mail.models import (
 
 from mail.service import (
     init_mail_template,
-    mail_template_render,
-    queue_mail,
     queue_mail_message,
+    queue_mail_template,
     TEMPLATE_TYPE_MANDRILL,
 )
 
 from example.models import Enquiry
 from example.base import get_env_variable
+
 
 def default_scenario_mail():
     create_hello_template()
@@ -39,15 +39,15 @@ def create_hello_template():
         is_html=False,
         template_type=TEMPLATE_TYPE_DJANGO,
     )
-
     hello_template.subject = "hello {{ name }}"
     hello_template.description = (
-        "Dear {{name}},\n"
-        "Thank you for subscribing to the {{title}} news letter\n"
+        "Dear {{ name }},\n"
+        "Thank you for subscribing to the {{ title }} news letter\n"
         "Best wishes\n\n"
         "The {{ title }} team"
     )
     hello_template.save()
+
 
 def create_goodbye_template():
     goodbye_template = init_mail_template(
@@ -98,14 +98,14 @@ def create_email_ack_template():
 
 def create_enquiry():
     email = get_env_variable('TEST_EMAIL_ADDRESS_1')
-
     e = Enquiry(**dict(
         email = email,
         subject = "Membership Options",
         description = (
             "Dear Sirs,\n\n"
-            "I've just got a job as a legal secretary."
-            "  Can you please outline details of membership options available to me\n\n"
+            "I've just got a job as a legal secretary.  "
+            "Can you please outline details of membership "
+            "options available to me\n\n"
             "Kind regards,\n\n"
             "G. Paltrow"
         )
@@ -115,37 +115,30 @@ def create_enquiry():
 
 
 def queue_enquiry_hello(enq=None):
-    if (enq == None):
+    if not enq:
         enq = create_enquiry()
-
-    context = {'name': 'Fred Bloggs', 'title': 'Okehamption'}
-
-    subject, description = mail_template_render('hello', context)
-    queue_mail(
+    content_data = dict({enq.email: {'name': 'Fred Bloggs', 'title': 'Okehampton'}})
+    queue_mail_template(
         enq,
-        [enq.email],
-        subject,
-        description,
+        'hello',
+        content_data,
     )
 
+
 def queue_enquiry_goodbye(enq=None):
-    if (enq == None):
+    if not enq:
         enq = create_enquiry()
-
-    context = dict({enq.email: {'name': 'Fred Bloggs', 'title': 'Okehamption'}})
-
-    queue_mail_message(
+    context = dict({enq.email: {'name': 'Fred Bloggs', 'title': 'Okehampton'}})
+    queue_mail_template(
         enq,
         'goodbye',
         context,
     )
 
+
 def queue_enquiry_acknowledgement(enq=None):
-    template = MailTemplate.objects.get(slug='enquiry_acknowledgement')
-
-    if (enq == None):
+    if not enq:
         enq = create_enquiry()
-
     content_data = dict(
         {
             enq.email: {
@@ -155,27 +148,18 @@ def queue_enquiry_acknowledgement(enq=None):
             }
         }
     )
-
-    queue_mail_message(
+    queue_mail_template(
         enq,
-        template,
-        content_data=content_data
+        'enquiry_acknowledgement',
+        content_data=content_data,
     )
 
+
 def queue_enquiry_ack_with_copy(enq=None):
-    template = MailTemplate.objects.get(slug='enquiry_acknowledgement')
-
     copy_email = get_env_variable('TEST_EMAIL_ADDRESS_2')
-
-    if (enq == None):
+    if not enq:
         enq = create_enquiry()
-
-    email_addresses = [
-        enq.email,
-        copy_email,
-    ]
-
-    dFields = dict(
+    content_data = dict(
         {
             enq.email: {
                 "SUBJECT": "Re: " + enq.subject,
@@ -190,15 +174,8 @@ def queue_enquiry_ack_with_copy(enq=None):
             }
         }
     )
-
-    queue_mail(
+    queue_mail_template(
         enq,
-        email_addresses,
-        template.subject,
-        template.description,
-        is_html=True,
-        fields=dFields,
-        template_type=TEMPLATE_TYPE_MANDRILL,
+        'enquiry_acknowledgement',
+        content_data,
     )
-
-

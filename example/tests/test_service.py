@@ -14,8 +14,8 @@ from mail.models import (
 )
 from mail.service import (
     init_mail_template,
-    queue_mail,
     queue_mail_message,
+    queue_mail_template,
     send_mail,
     TEMPLATE_TYPE_DJANGO,
     TEMPLATE_TYPE_MANDRILL,
@@ -38,8 +38,7 @@ class TestService(TestCase):
             "Farming",
             'How many cows in the field?',
         )
-
-        queue_mail(
+        queue_mail_message(
             enquiry,
             [enquiry.email,],
             enquiry.subject,
@@ -71,20 +70,18 @@ class TestService(TestCase):
 
     def _create_goodbye_template(self):
         goodbye_template = init_mail_template(
-                'goodbye',
-                'Goodbye...',
-                'Available variables *|name|* *|title|* and *|question|*',
-                True,
-                TEMPLATE_TYPE_MANDRILL,
+            'goodbye',
+            'Goodbye...',
+            'Available variables *|name|* *|title|* and *|question|*',
+            True,
+            TEMPLATE_TYPE_MANDRILL,
         )
-
         goodbye_template.subject = "Goodbye *|name|*"
-
         goodbye_template.description = (
-                "Goodbye *|name|*\n\n"
-                "Sorry you are leaving the *|title|* group\n\n"
-                "You had a question *|question|* sorry we've not answered it yet\n\n"
-                "The *|title|* team\n"
+            "Goodbye *|name|*\n\n"
+            "Sorry you are leaving the *|title|* group\n\n"
+            "You had a question *|question|* sorry we've not answered it yet\n\n"
+            "The *|title|* team\n"
         )
         goodbye_template.save()
         return goodbye_template
@@ -104,19 +101,17 @@ class TestService(TestCase):
             "Welcome",
             'Can I join your club?',
         )
-
         template = self._create_welcome_template()
         content_data = dict(
-                {
-                    email_address: {
-                        "name" : "Fred",
-                        "title" : "SpaceX",
-                        "question": enquiry.description
-                    }
+            {
+                email_address: {
+                    "name" : "Fred",
+                    "title" : "SpaceX",
+                    "question": enquiry.description
                 }
+            }
         )
-
-        queue_mail_message(enquiry, template, content_data)
+        queue_mail_template(enquiry, template.slug, content_data)
         message = Message.objects.get(subject='Welcome {{name}}')
         mail_item = Mail.objects.get(email=email_address)
         self.assertEqual(message, mail_item.message)
@@ -129,36 +124,30 @@ class TestService(TestCase):
             "Welcome",
             'Can I join your club?',
         )
-
         template = self._create_goodbye_template()
         content_data = dict(
-                {
-                    email_address: {
-                        "name" : "Fred",
-                        "title" : "SpaceX",
-                        "question": enquiry.description
-                    }
+            {
+                email_address: {
+                    "name" : "Fred",
+                    "title" : "SpaceX",
+                    "question": enquiry.description
                 }
+            }
         )
-
-        queue_mail_message(enquiry, template, content_data)
-
+        queue_mail_template(enquiry, template.slug, content_data)
         m = self._mail(enquiry)
         self.assertIsNone(m.sent)
         self.assertIsNone(m.sent_response_code)
         self.assertEqual(m.message.subject,'Goodbye *|name|*')
-
         # test the send facility using djrill mail backend
         temp_email_backend = settings.EMAIL_BACKEND
         settings.EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
         settings.MANDRILL_API_KEY = get_env_variable('TEST_MANDRILL_API_KEY')
-
         send_mail()
         # self.assertEqual(len(mail.outbox), 1)
         m = self._mail(enquiry)
         self.assertIsNotNone(m.sent)
         self.assertIsNotNone(m.sent_response_code)
-
         # tidy up!!
         settings.EMAIL_BACKEND = temp_email_backend
 

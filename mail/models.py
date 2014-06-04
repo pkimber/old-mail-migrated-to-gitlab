@@ -9,8 +9,10 @@ import reversion
 
 from base.model_utils import TimeStampedModel
 
+
 TEMPLATE_TYPE_DJANGO = 'django'
 TEMPLATE_TYPE_MANDRILL = 'mandrill'
+
 
 class MailError(Exception):
 
@@ -22,13 +24,50 @@ class MailError(Exception):
         return repr('%s, %s' % (self.__class__.__name__, self.value))
 
 
+class MailTemplate(TimeStampedModel):
+    """email template.
+
+    The 'description' should include details of the available context
+    variables.
+
+    If this is a Mandrill template, then use the 'template_name' rather than
+    the 'description'.
+    """
+
+    slug = models.SlugField(unique=True)
+    title = models.CharField(max_length=100)
+    help_text = models.TextField(blank=True)
+    is_html = models.BooleanField(default=False)
+    template_type = models.CharField(max_length=32, default=TEMPLATE_TYPE_DJANGO)
+    template_name = models.CharField(max_length=100, blank=True)
+    subject = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ('title',)
+        verbose_name = 'Template'
+        verbose_name_plural = 'Template'
+
+    def __str__(self):
+        return '{}'.format(self.title)
+
+reversion.register(MailTemplate)
+
+
 class Message(TimeStampedModel):
-    """email messages to send."""
+    """the actual mail message - one or more email addresses attached.
+
+    If the template is blank, the subject and description will be sent as
+    they are.
+
+    If the template is not blank, the message will be rendered using the
+    template.
+    """
 
     subject = models.CharField(max_length=200)
-    description = models.TextField()
-    template_type = models.CharField(max_length=32, default=TEMPLATE_TYPE_DJANGO)
+    description = models.TextField(blank=True)
     is_html = models.BooleanField(default=False)
+    template = models.ForeignKey(MailTemplate, blank=True, null=True)
     # link to the object in the system which asked us to send the email.
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
@@ -70,13 +109,15 @@ reversion.register(Mail)
 
 
 class MailField(models.Model):
+    """key, value store for each email."""
+
     mail = models.ForeignKey(Mail)
     key = models.CharField(max_length=100)
     value = models.CharField(max_length=256)
 
     class Meta:
-        verbose_name = 'Mail Field'
-        verbose_name_plural = 'Mail Field'
+        verbose_name = 'Mail field'
+        verbose_name_plural = 'Mail fields'
 
     def __str__(self):
         return '{}: {}'.format(
@@ -85,28 +126,3 @@ class MailField(models.Model):
         )
 
 reversion.register(MailField)
-
-class MailTemplate(TimeStampedModel):
-    """email template.
-
-    The 'description' should include details of the available context
-    variables.
-    """
-
-    slug = models.SlugField(unique=True)
-    title = models.CharField(max_length=100)
-    help_text = models.TextField(blank=True)
-    is_html = models.BooleanField(default=False)
-    template_type = models.CharField(max_length=32, default=TEMPLATE_TYPE_DJANGO)
-    subject = models.CharField(max_length=200, blank=True)
-    description = models.TextField(blank=True)
-
-    class Meta:
-        ordering = ('title',)
-        verbose_name = 'Template'
-        verbose_name_plural = 'Template'
-
-    def __str__(self):
-        return '{}'.format(self.title)
-
-reversion.register(MailTemplate)

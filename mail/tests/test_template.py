@@ -9,8 +9,8 @@ from mail.models import (
     TEMPLATE_TYPE_MANDRILL,
 )
 from mail.service import (
+    _mail_template_render,
     init_mail_template,
-    mail_template_render,
 )
 
 
@@ -57,7 +57,7 @@ class TestMailTemplate(TestCase):
         template.subject = 'Hello {{ name }}'
         template.description = 'Welcome to {{ title }}'
         template.save()
-        subject, description = mail_template_render(
+        subject, description = _mail_template_render(
             'hello', dict(name='Patrick', title='Hatherleigh')
         )
         self.assertEqual('Hello Patrick', subject)

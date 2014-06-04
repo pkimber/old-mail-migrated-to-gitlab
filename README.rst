@@ -26,8 +26,9 @@ Virtual Environment
 To run the tests, you will need to create a file called ``.private`` in the
 top level directory of the app.  This should contain the following::
 
-  export MANDRILL_USER_NAME="<Your MANDRILL email address used to create your account>"
   export MAILGUN_SERVER_NAME="<your domain name used for the notify email address>"
+  export MANDRILL_API_KEY="<your api key>"
+  export MANDRILL_USER_NAME="<Your MANDRILL email address used to create your account>"
   export TEST_EMAIL_ADDRESS_1="<an email address to use for running the test scenarios>"
   export TEST_EMAIL_ADDRESS_2="<another different email address to use for running the test scenarios>"
 
