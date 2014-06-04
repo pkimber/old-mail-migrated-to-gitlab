@@ -48,22 +48,20 @@ class TestService(TestCase):
 
     def _create_welcome_template(self):
         welcome_template = init_mail_template(
-                'welcome',
-                'Welcome...',
-                'Available variables {{name}} {{title}} and {{question}}',
-                False,
-                TEMPLATE_TYPE_DJANGO,
+            'welcome',
+            'Welcome...',
+            'Available variables {{name}} {{title}} and {{question}}',
+            False,
+            TEMPLATE_TYPE_DJANGO,
         )
-
         welcome_template.subject = "Welcome {{name}}"
-
         welcome_template.description = (
-                "Hello {{name}}\n\n"
-                "Welcome to the {{title}} group\n\n"
-                "We acknowledge your question {{question}}\n\n"
-                "We probably won't answer it because we've not written "
-                "that bit of code yet\n\n"
-                "The {{ title }} team\n"
+            "Hello {{name}}\n\n"
+            "Welcome to the {{title}} group\n\n"
+            "We acknowledge your question {{question}}\n\n"
+            "We probably won't answer it because we've not written "
+            "that bit of code yet\n\n"
+            "The {{ title }} team\n"
         )
         welcome_template.save()
         return welcome_template
@@ -102,15 +100,13 @@ class TestService(TestCase):
             'Can I join your club?',
         )
         template = self._create_welcome_template()
-        content_data = dict(
-            {
-                email_address: {
-                    "name" : "Fred",
-                    "title" : "SpaceX",
-                    "question": enquiry.description
-                }
+        content_data = {
+            email_address: {
+                "name" : "Fred",
+                "title" : "SpaceX",
+                "question": enquiry.description
             }
-        )
+        }
         queue_mail_template(enquiry, template.slug, content_data)
         message = Message.objects.get(subject='Welcome {{name}}')
         mail_item = Mail.objects.get(email=email_address)
@@ -125,15 +121,13 @@ class TestService(TestCase):
             'Can I join your club?',
         )
         template = self._create_goodbye_template()
-        content_data = dict(
-            {
-                email_address: {
-                    "name" : "Fred",
-                    "title" : "SpaceX",
-                    "question": enquiry.description
-                }
+        content_data = {
+            email_address: {
+                "name" : "Fred",
+                "title" : "SpaceX",
+                "question": enquiry.description
             }
-        )
+        }
         queue_mail_template(enquiry, template.slug, content_data)
         m = self._mail(enquiry)
         self.assertIsNone(m.sent)

@@ -36,9 +36,8 @@ logger = logging.getLogger(__name__)
 
 
 def _get_merge_vars(mail_item):
-    return dict(
-        [ (mf.key, mf.value) for mf in mail_item.mailfield_set.all()]
-    )
+    result = [ (mf.key, mf.value) for mf in mail_item.mailfield_set.all()]
+    return dict(result)
 
 
 def _render(text, context):

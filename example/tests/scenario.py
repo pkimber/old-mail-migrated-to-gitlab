@@ -114,7 +114,7 @@ def create_enquiry():
 def queue_enquiry_hello(enq=None):
     if not enq:
         enq = create_enquiry()
-    content_data = dict({enq.email: {'name': 'Fred Bloggs', 'title': 'Okehampton'}})
+    content_data = {enq.email: {'name': 'Fred Bloggs', 'title': 'Okehampton'}}
     queue_mail_template(
         enq,
         'hello',
@@ -125,7 +125,7 @@ def queue_enquiry_hello(enq=None):
 def queue_enquiry_goodbye(enq=None):
     if not enq:
         enq = create_enquiry()
-    context = dict({enq.email: {'name': 'Fred Bloggs', 'title': 'Okehampton'}})
+    context = {enq.email: {'name': 'Fred Bloggs', 'title': 'Okehampton'}}
     queue_mail_template(
         enq,
         'goodbye',
@@ -136,15 +136,13 @@ def queue_enquiry_goodbye(enq=None):
 def queue_enquiry_acknowledgement(enq=None):
     if not enq:
         enq = create_enquiry()
-    content_data = dict(
-        {
-            enq.email: {
-                "SUBJECT": "Re: " + enq.subject,
-                "BODY": enq.description,
-                "DATE": enq.created.strftime("%d-%b-%Y %H:%M:%S")
-            }
-        }
-    )
+    content_data = {
+        enq.email: {
+            "SUBJECT": "Re: " + enq.subject,
+            "BODY": enq.description,
+            "DATE": enq.created.strftime("%d-%b-%Y %H:%M:%S"),
+        },
+    }
     queue_mail_template(
         enq,
         'enquiry_acknowledgement',
@@ -156,21 +154,19 @@ def queue_enquiry_ack_with_copy(enq=None):
     copy_email = get_env_variable('TEST_EMAIL_ADDRESS_2')
     if not enq:
         enq = create_enquiry()
-    content_data = dict(
-        {
-            enq.email: {
-                "SUBJECT": "Re: " + enq.subject,
-                "BODY": enq.description,
-                "DATE": enq.created.strftime("%d-%b-%Y %H:%M:%S")
-            },
-            copy_email: {
-                "SUBJECT": "Copy: " + enq.subject,
-                "BODY": "<h1>Copy of Message sent to '" + 
-                enq.email + "':</h1>" + enq.description,
-                "DATE": enq.created.strftime("%d-%b-%Y %H:%M:%S")
-            }
+    content_data = {
+        enq.email: {
+            "SUBJECT": "Re: " + enq.subject,
+            "BODY": enq.description,
+            "DATE": enq.created.strftime("%d-%b-%Y %H:%M:%S")
+        },
+        copy_email: {
+            "SUBJECT": "Copy: " + enq.subject,
+            "BODY": "<h1>Copy of Message sent to '" + 
+            enq.email + "':</h1>" + enq.description,
+            "DATE": enq.created.strftime("%d-%b-%Y %H:%M:%S")
         }
-    )
+    }
     queue_mail_template(
         enq,
         'enquiry_acknowledgement',

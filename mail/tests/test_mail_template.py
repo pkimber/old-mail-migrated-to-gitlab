@@ -27,18 +27,18 @@ class TestMailTemplate(TestCase):
 
     def test_init_template_update(self):
         init_mail_template(
-                'hello',
-                'Welcome to our mailing list.',
-                '',
-                False,
-                TEMPLATE_TYPE_DJANGO,
+            'hello',
+            'Welcome to our mailing list.',
+            '',
+            False,
+            TEMPLATE_TYPE_DJANGO,
         )
         init_mail_template(
-                'hello',
-                'Welcome...',
-                '',
-                False,
-                TEMPLATE_TYPE_DJANGO,
+            'hello',
+            'Welcome...',
+            '',
+            False,
+            TEMPLATE_TYPE_DJANGO,
         )
         template = MailTemplate.objects.get(slug='hello')
         self.assertEqual(template.title, 'Welcome...')
