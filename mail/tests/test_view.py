@@ -10,9 +10,8 @@ from login.tests.scenario import (
 )
 
 from mail.models import (
-        MailTemplate,
-        TEMPLATE_TYPE_DJANGO,
-        TEMPLATE_TYPE_MANDRILL,
+    MailTemplate,
+    TEMPLATE_TYPE_DJANGO,
 )
 from mail.service import init_mail_template
 
@@ -26,11 +25,11 @@ class TestView(TestCase):
 
     def test_template_update(self):
         template = init_mail_template(
-                'hello',
-                'Welcome...',
-                '',
-                False,
-                TEMPLATE_TYPE_DJANGO
+            'hello',
+            'Welcome...',
+            '',
+            False,
+            TEMPLATE_TYPE_DJANGO
         )
         url = reverse('mail.template.update', kwargs=dict(slug=template.slug))
         response = self.client.post(

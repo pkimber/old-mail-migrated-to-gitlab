@@ -84,8 +84,8 @@ def _simple_mail_send_message(m):
         )
     else:
         mail.send_mail(
-            subject,
-            body,
+            m.message.subject,
+            m.message.description,
             'notify@{}'.format(settings.MAILGUN_SERVER_NAME),
             [m.email,],
             fail_silently=False,
@@ -127,9 +127,9 @@ def _template_mail_send(message_keys):
 def _template_mail_send_django(message):
     if not settings.MAILGUN_SERVER_NAME:
         raise MailError("Mailgun server name is not correctly configured")
-    for mail in message.mail_set.all():
+    for m in message.mail_set.all():
         try:
-            merge_vars = _get_merge_vars(mail)
+            merge_vars = _get_merge_vars(m)
             subject, description = _mail_template_render(
                 message.template_slug,
                 merge_vars,
@@ -140,15 +140,16 @@ def _template_mail_send_django(message):
                 to=mail.email,
             )
             if message.template.is_html:
-                msg.attach_alternative(body, "text/html")
+                msg.attach_alternative(description, "text/html")
                 msg.auto_text = True
             else:
                 msg.body = description
             msg.send()
+            m.save()
         except (SMTPException, MailgunAPIError) as e:
             logger.error(e.message)
-            mail.retry_count = (mail.retry_count or 0) + 1
-            mail.save()
+            m.retry_count = (m.retry_count or 0) + 1
+            m.save()
 
 
 def _template_mail_send_mandrill(m):

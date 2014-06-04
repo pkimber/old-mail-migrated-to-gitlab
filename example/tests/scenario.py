@@ -2,16 +2,13 @@
 from __future__ import unicode_literals
 
 from mail.models import (
-    MailTemplate,
     TEMPLATE_TYPE_DJANGO,
     TEMPLATE_TYPE_MANDRILL,
 )
 
 from mail.service import (
     init_mail_template,
-    queue_mail_message,
     queue_mail_template,
-    TEMPLATE_TYPE_MANDRILL,
 )
 
 from example.models import Enquiry

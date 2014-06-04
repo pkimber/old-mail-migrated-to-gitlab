@@ -6,7 +6,6 @@ from django.test import TestCase
 from mail.models import (
     MailTemplate,
     TEMPLATE_TYPE_DJANGO,
-    TEMPLATE_TYPE_MANDRILL,
 )
 from mail.service import (
     _mail_template_render,
