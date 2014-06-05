@@ -136,7 +136,7 @@ def queue_enquiry_goodbye(enq=None):
 def queue_enquiry_acknowledgement(enq=None):
     if not enq:
         enq = create_enquiry()
-    content_data = {
+    context = {
         enq.email: {
             "SUBJECT": "Re: " + enq.subject,
             "BODY": enq.description,
@@ -146,7 +146,7 @@ def queue_enquiry_acknowledgement(enq=None):
     queue_mail_template(
         enq,
         'enquiry_acknowledgement',
-        content_data=content_data,
+        context,
     )
 
 
@@ -154,7 +154,7 @@ def queue_enquiry_ack_with_copy(enq=None):
     copy_email = get_env_variable('TEST_EMAIL_ADDRESS_2')
     if not enq:
         enq = create_enquiry()
-    content_data = {
+    context = {
         enq.email: {
             "SUBJECT": "Re: " + enq.subject,
             "BODY": enq.description,
@@ -170,5 +170,5 @@ def queue_enquiry_ack_with_copy(enq=None):
     queue_mail_template(
         enq,
         'enquiry_acknowledgement',
-        content_data,
+        context,
     )

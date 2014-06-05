@@ -102,8 +102,8 @@ class TestService(TestCase):
         template = self._create_welcome_template()
         content_data = {
             email_address: {
-                "name" : "Fred",
-                "title" : "SpaceX",
+                "name": "Fred",
+                "title": "SpaceX",
                 "question": enquiry.description
             }
         }
@@ -123,8 +123,8 @@ class TestService(TestCase):
         template = self._create_goodbye_template()
         content_data = {
             email_address: {
-                "name" : "Fred",
-                "title" : "SpaceX",
+                "name": "Fred",
+                "title": "SpaceX",
                 "question": enquiry.description
             }
         }

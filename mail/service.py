@@ -35,6 +35,18 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
+def _can_use_mandrill():
+    api_key = None
+    user_name = None
+    try:
+        api_key = settings.MANDRILL_API_KEY
+        user_name = settings.MANDRILL_USER_NAME
+    except AttributeError:
+        pass
+
+    return api_key and user_name
+
+
 def _get_merge_vars(mail_item):
     result = [ (mf.key, mf.value) for mf in mail_item.mailfield_set.all()]
     return dict(result)
@@ -71,7 +83,7 @@ def _simple_mail_send(primary_keys):
 
 def _simple_mail_send_message(m):
     """Send message to a list of email addresses."""
-    if settings.MANDRILL_USER_NAME and settings.MANDRILL_API_KEY:
+    if _can_use_mandrill():
         mail.send_mail(
             m.message.subject,
             m.message.description,
@@ -265,14 +277,14 @@ def queue_mail_message(content_object, email_addresses, subject, description, is
 
 
 @transaction.atomic
-def queue_mail_template(content_object, template_slug, content_data):
+def queue_mail_template(content_object, template_slug, context):
     """Queue a mail message.  The message will be rendered using the template.
 
     When the mail is sent, the template will be found and rendered using
     with Django or Mandrill.
 
-    The content data is a dict containing email addresses and optionally a
-    key, value dict for field values.
+    The context is a dict containing email addresses and optionally a
+    key, value dict for each email address.
     """
 
     template = get_mail_template(template_slug)
@@ -282,13 +294,13 @@ def queue_mail_template(content_object, template_slug, content_data):
         template=template,
     ))
     message.save()
-    for email in content_data.keys():
+    for email in context.keys():
         mail = Mail(**dict(
             email=email,
             message=message,
         ))
         mail.save()
-        email_data = content_data[email]
+        email_data = context[email]
         if email_data:
             for key in email_data.keys():
                 value = email_data.get(key, None)
