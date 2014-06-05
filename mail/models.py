@@ -30,8 +30,8 @@ class MailTemplate(TimeStampedModel):
     The 'description' should include details of the available context
     variables.
 
-    If this is a Mandrill template, then use the 'template_name' rather than
-    the 'description'.
+    If this is a Mandrill template, then we will ignore the description and
+    use the slug to lookup the template name using the API.
     """
 
     slug = models.SlugField(unique=True)
@@ -39,7 +39,6 @@ class MailTemplate(TimeStampedModel):
     help_text = models.TextField(blank=True)
     is_html = models.BooleanField(default=False)
     template_type = models.CharField(max_length=32, default=TEMPLATE_TYPE_DJANGO)
-    template_name = models.CharField(max_length=100, blank=True)
     subject = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
 
