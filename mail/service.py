@@ -165,9 +165,9 @@ def _template_mail_send_django(message):
 
 def _template_mail_send_mandrill(m):
     """ Send message to a list of email addresses."""
-    if not settings.MANDRILL_USER_NAME and settings.MANDRILL_API_KEY:
+    if not _can_use_mandrill():
         raise MailError(
-            "Mandrill user name and password are not correctly configured"
+            "Mandrill user name and API key are not correctly configured"
         )
     mail_items = m.mail_set.all()
     try:
@@ -179,8 +179,10 @@ def _template_mail_send_mandrill(m):
             from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
             to=email_addresses,
         )
-        msg.metadata = {'user_id': settings.MANDRILL_USER_NAME},
-        if (m.is_html):
+        msg.metadata = {
+            'user_id': settings.MANDRILL_USER_NAME
+        }
+        if m.is_html:
             msg.attach_alternative(m.description, "text/html")
             msg.auto_text = True
         else:
@@ -205,8 +207,6 @@ def _template_mail_send_mandrill(m):
                     ": " + resp.reject_reason)
             mi.save()
     except (SMTPException, MandrillAPIError) as e:
-        import ipdb
-        ipdb.set_trace()
         logger.error(e)
         for mi in mail_items:
             mi.retry_count = (mi.retry_count or 0) + 1
