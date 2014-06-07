@@ -43,7 +43,7 @@ def _can_use_mandrill():
         try:
             api_key = settings.MANDRILL_API_KEY
             user_name = settings.MANDRILL_USER_NAME
-            result = True
+            result = api_key and user_name
         except AttributeError:
             pass
     return result
