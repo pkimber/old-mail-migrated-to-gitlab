@@ -81,17 +81,6 @@ def _render(text, context):
     return t.render(c)
 
 
-#def _simple_mail_process():
-#    primary_keys = [
-#        e.pk for e in Mail.objects.filter(
-#            sent__isnull=True,
-#            message__template__isnull=True,
-#        )
-#    ]
-#    _simple_mail_send(primary_keys)
-
-
-
 def _mail_send(primary_keys):
     for pk in primary_keys:
         m = Mail.objects.get(pk=pk)
@@ -136,38 +125,6 @@ def _send_mail_simple(m):
             [m.email,],
             fail_silently=False,
         )
-
-
-#def _template_mail_process():
-#    template_types = (
-#        TEMPLATE_TYPE_DJANGO,
-#        TEMPLATE_TYPE_MANDRILL,
-#    )
-#    qs = Mail.objects.filter(
-#        sent__isnull=True,
-#        message__template__template_type__in=template_types,
-#    ).order_by(
-#        'message'
-#    )
-#    message_keys = set()
-#    for item in qs:
-#        message_keys.add(item.message.pk)
-#    _template_mail_send(message_keys)
-
-
-#def _template_mail_send(message_keys):
-#    for pk in message_keys:
-#        message = Message.objects.get(pk=pk)
-#        if message.template.template_type == TEMPLATE_TYPE_DJANGO:
-#            _send_mail_django_template(message)
-#        elif message.template.template_type == TEMPLATE_TYPE_MANDRILL:
-#            _send_mail_mandrill_template(message)
-#        else:
-#            raise MailError(
-#                "Unknown mail template type: '{}'".format(
-#                    message.template.template_type
-#                )
-#            )
 
 
 def _send_mail_django_template(m):
@@ -353,5 +310,3 @@ def queue_mail_template(content_object, template_slug, context):
 
 def send_mail():
     _mail_process()
-    #_simple_mail_process()
-    #_template_mail_process()
