@@ -35,33 +35,44 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
-def _using_mandrill():
-    if not 'DjrillBackend' in settings.EMAIL_BACKEND:
-        raise MailError(
-            "The email backend is not 'DjrillBackend'.  You cannot send "
-            "messages using Mandrill (or send Mandrill templates)."
-        )
-    if not _can_use_mandrill():
-        raise MailError(
-            "The Mandrill user name and/or API key are not configured"
-        )
-
-
 def _can_use_mandrill():
     api_key = None
+    result = False
     user_name = None
-    try:
-        api_key = settings.MANDRILL_API_KEY
-        user_name = settings.MANDRILL_USER_NAME
-    except AttributeError:
-        pass
+    if 'DjrillBackend' in settings.EMAIL_BACKEND:
+        try:
+            api_key = settings.MANDRILL_API_KEY
+            user_name = settings.MANDRILL_USER_NAME
+            result = True
+        except AttributeError:
+            pass
+    return result
 
-    return api_key and user_name
+
+def _check_backends(template_types):
+    """Check the backend settings... so we can abort early."""
+    for t in template_types:
+        if t == TEMPLATE_TYPE_DJANGO:
+            _using_mailgun()
+        elif t == TEMPLATE_TYPE_MANDRILL:
+            _using_mandrill()
+            _using_mailgun()
 
 
 def _get_merge_vars(mail_item):
     result = [ (mf.key, mf.value) for mf in mail_item.mailfield_set.all()]
     return dict(result)
+
+
+def _mail_process():
+    primary_keys = []
+    template_types = []
+    for m in Mail.objects.filter(sent__isnull=True):
+        primary_keys.append(m.pk)
+        if m.message.template:
+            template_types.append(m.message.template.template_type)
+    _check_backends(set(template_types))
+    _mail_send(primary_keys)
 
 
 def _render(text, context):
@@ -70,31 +81,43 @@ def _render(text, context):
     return t.render(c)
 
 
-def _simple_mail_process():
-    primary_keys = [
-        e.pk for e in Mail.objects.filter(
-            sent__isnull=True,
-            message__template__isnull=True,
-        )
-    ]
-    _simple_mail_send(primary_keys)
+#def _simple_mail_process():
+#    primary_keys = [
+#        e.pk for e in Mail.objects.filter(
+#            sent__isnull=True,
+#            message__template__isnull=True,
+#        )
+#    ]
+#    _simple_mail_send(primary_keys)
 
 
-def _simple_mail_send(primary_keys):
+
+def _mail_send(primary_keys):
     for pk in primary_keys:
         m = Mail.objects.get(pk=pk)
         try:
-            _simple_mail_send_message(m)
+            if m.message.template:
+                template_type = m.message.template.template_type
+            else:
+                template_type = None
+            if template_type == TEMPLATE_TYPE_DJANGO:
+                result = _send_mail_django_template(m)
+            elif template_type == TEMPLATE_TYPE_MANDRILL:
+                result = _send_mail_mandrill_template(m)
+            else:
+                result = _send_mail_simple(m)
             m.sent = timezone.now()
-        except (SMTPException, MailgunAPIError) as e:
+            if result:
+                m.sent_response_code = result
+        except (SMTPException, MailError, MailgunAPIError, MandrillAPIError) as e:
             logger.error(e.message)
             retry_count = m.retry_count or 0
             m.retry_count = retry_count + 1
         m.save()
 
 
-def _simple_mail_send_message(m):
-    """Send message to a list of email addresses."""
+def _send_mail_simple(m):
+    """Send message to a single email address using the Django API."""
     if _can_use_mandrill():
         mail.send_mail(
             m.message.subject,
@@ -115,111 +138,120 @@ def _simple_mail_send_message(m):
         )
 
 
-def _template_mail_process():
-    template_types = (
-        TEMPLATE_TYPE_DJANGO,
-        TEMPLATE_TYPE_MANDRILL,
-    )
-    qs = Mail.objects.filter(
-        sent__isnull=True,
-        message__template__template_type__in=template_types,
-    ).order_by(
-        'message'
-    )
-    message_keys = set()
-    for item in qs:
-        message_keys.add(item.message.pk)
-    _template_mail_send(message_keys)
+#def _template_mail_process():
+#    template_types = (
+#        TEMPLATE_TYPE_DJANGO,
+#        TEMPLATE_TYPE_MANDRILL,
+#    )
+#    qs = Mail.objects.filter(
+#        sent__isnull=True,
+#        message__template__template_type__in=template_types,
+#    ).order_by(
+#        'message'
+#    )
+#    message_keys = set()
+#    for item in qs:
+#        message_keys.add(item.message.pk)
+#    _template_mail_send(message_keys)
 
 
-def _template_mail_send(message_keys):
-    for pk in message_keys:
-        message = Message.objects.get(pk=pk)
-        if message.template.template_type == TEMPLATE_TYPE_DJANGO:
-            _template_mail_send_django(message)
-        elif message.template.template_type == TEMPLATE_TYPE_MANDRILL:
-            _template_mail_send_mandrill(message)
+#def _template_mail_send(message_keys):
+#    for pk in message_keys:
+#        message = Message.objects.get(pk=pk)
+#        if message.template.template_type == TEMPLATE_TYPE_DJANGO:
+#            _send_mail_django_template(message)
+#        elif message.template.template_type == TEMPLATE_TYPE_MANDRILL:
+#            _send_mail_mandrill_template(message)
+#        else:
+#            raise MailError(
+#                "Unknown mail template type: '{}'".format(
+#                    message.template.template_type
+#                )
+#            )
+
+
+def _send_mail_django_template(m):
+    merge_vars = _get_merge_vars(m)
+    subject, description = _mail_template_render(
+        m.message.template_slug,
+        merge_vars,
+    )
+    msg = mail.EmailMultiAlternatives(
+        subject=subject,
+        from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
+        to=mail.email,
+    )
+    if m.message.template.is_html:
+        msg.attach_alternative(description, "text/html")
+        msg.auto_text = True
+    else:
+        msg.body = description
+    msg.send()
+
+
+def _send_mail_mandrill_template(m):
+    """Send message to a single email address."""
+    result = None
+    email_addresses = [m.email,]
+    msg = mail.EmailMultiAlternatives(
+        subject=m.message.subject,
+        from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
+        to=email_addresses,
+    )
+    msg.metadata = {
+        'user_id': settings.MANDRILL_USER_NAME,
+    }
+    if m.message.template.is_html:
+        msg.attach_alternative(m.message.description, "text/html")
+        msg.auto_text = True
+    else:
+        msg.body = m.message.description
+    merge_vars = dict()
+    user_vars = _get_merge_vars(m)
+    if len(user_vars):
+        merge_vars.update ({m.email: user_vars})
+    if len(merge_vars):
+        msg.merge_vars = merge_vars
+    msg.template_name = m.message.template.slug
+    msg.send()
+    # sending one email, so expecting a single element in this list e.g:
+    # [
+    #   {
+    #     'email': 'testing@pkimber.net',
+    #     'status': 'sent',
+    #     '_id': '1dffa1548a884dcdb6942f758abff168',
+    #     'reject_reason': None
+    #   }
+    # ]
+    for resp in msg.mandrill_response:
+        if resp['status'] == 'sent':
+            result = resp['_id']
         else:
             raise MailError(
-                "Unknown mail template type: '{}'".format(
-                    message.template.template_type
+                "Failed to send message to {}: {}".format(
+                    resp.email, resp.reject_reason
                 )
             )
+    return result
 
 
-def _template_mail_send_django(message):
+def _using_mailgun():
+    """We are using mailgun (or the server name)... check settings."""
     if not settings.MAILGUN_SERVER_NAME:
         raise MailError("Mailgun server name is not correctly configured")
-    for m in message.mail_set.all():
-        try:
-            merge_vars = _get_merge_vars(m)
-            subject, description = _mail_template_render(
-                message.template_slug,
-                merge_vars,
-            )
-            msg = mail.EmailMultiAlternatives(
-                subject=subject,
-                from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
-                to=mail.email,
-            )
-            if message.template.is_html:
-                msg.attach_alternative(description, "text/html")
-                msg.auto_text = True
-            else:
-                msg.body = description
-            msg.send()
-            m.save()
-        except (SMTPException, MailgunAPIError) as e:
-            logger.error(e.message)
-            m.retry_count = (m.retry_count or 0) + 1
-            m.save()
 
 
-def _template_mail_send_mandrill(m):
-    """ Send message to a list of email addresses."""
-    _using_mandrill()
-    mail_items = m.mail_set.all()
-    try:
-        email_addresses = [
-            mail_item.email for mail_item in mail_items
-        ]
-        msg = mail.EmailMultiAlternatives(
-            subject=m.subject,
-            from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
-            to=email_addresses,
+def _using_mandrill():
+    """We are using mandrill... so check settings."""
+    if not 'DjrillBackend' in settings.EMAIL_BACKEND:
+        raise MailError(
+            "The email backend is not 'DjrillBackend'.  You cannot send "
+            "messages using Mandrill (or send Mandrill templates)."
         )
-        msg.metadata = {
-            'user_id': settings.MANDRILL_USER_NAME
-        }
-        if m.is_html:
-            msg.attach_alternative(m.description, "text/html")
-            msg.auto_text = True
-        else:
-            msg.body = m.description
-        merge_vars = dict()
-        for mail_item in mail_items:
-            user_vars = _get_merge_vars(mail_item)
-            if len(user_vars):
-                merge_vars.update ({mail_item.email : user_vars})
-        if len(merge_vars):
-            msg.merge_vars = merge_vars
-        msg.template_name = m.template.slug
-        msg.send()
-        for resp in msg.mandrill_response:
-            mi = mail_items.filter(email=resp['email'])[0]
-            if (resp['status'] == 'sent'):
-                mi.sent = timezone.now()
-                mi.sent_response_code = resp['_id']
-            else:
-                mi.retry_count = (mi.retry_count or 0) + 1
-                logger.error("Failed to send message to " + resp.email +
-                    ": " + resp.reject_reason)
-            mi.save()
-    except (SMTPException, MandrillAPIError) as e:
-        logger.error(e)
-        for mi in mail_items:
-            mi.retry_count = (mi.retry_count or 0) + 1
-            mi.save()
+    if not _can_use_mandrill():
+        raise MailError(
+            "The Mandrill user name and/or API key are not configured"
+        )
 
 
 def get_mail_template(slug):
@@ -320,5 +352,6 @@ def queue_mail_template(content_object, template_slug, context):
 
 
 def send_mail():
-    _simple_mail_process()
-    _template_mail_process()
+    _mail_process()
+    #_simple_mail_process()
+    #_template_mail_process()
