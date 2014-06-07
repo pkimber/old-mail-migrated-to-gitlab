@@ -35,6 +35,18 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
+def _using_mandrill():
+    if not 'DjrillBackend' in settings.EMAIL_BACKEND:
+        raise MailError(
+            "The email backend is not 'DjrillBackend'.  You cannot send "
+            "messages using Mandrill (or send Mandrill templates)."
+        )
+    if not _can_use_mandrill():
+        raise MailError(
+            "The Mandrill user name and/or API key are not configured"
+        )
+
+
 def _can_use_mandrill():
     api_key = None
     user_name = None
@@ -165,10 +177,7 @@ def _template_mail_send_django(message):
 
 def _template_mail_send_mandrill(m):
     """ Send message to a list of email addresses."""
-    if not _can_use_mandrill():
-        raise MailError(
-            "Mandrill user name and API key are not correctly configured"
-        )
+    _using_mandrill()
     mail_items = m.mail_set.all()
     try:
         email_addresses = [
