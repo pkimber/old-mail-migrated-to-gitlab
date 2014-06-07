@@ -170,6 +170,10 @@ def _send_mail_mandrill_template(m):
     if len(merge_vars):
         msg.merge_vars = merge_vars
     msg.template_name = m.message.template.slug
+    # use the subject defined in the mandrill template
+    msg.use_template_subject = True
+    # use the from address defined in the mandrill template
+    msg.use_template_from = True
     msg.send()
     # sending one email, so expecting a single element in this list e.g:
     # [
