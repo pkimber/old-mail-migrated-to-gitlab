@@ -33,11 +33,7 @@
                     <small>
                       {{ m.email }}
                       {% if m.sent %}
-                        ({{ m.sent|date:"d/m/Y H:i" }}
-                        {% if m.sent_response_code %}
-                          - {{ m.sent_response_code}}
-                        {% endif %}
-                        )
+                        {{ m.sent|date:"d/m/Y H:i" }}
                       {% else %}
                         (pending)
                       {% endif %}
