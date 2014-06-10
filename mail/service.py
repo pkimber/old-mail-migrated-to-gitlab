@@ -185,7 +185,8 @@ def _send_mail_mandrill_template(m):
     #   }
     # ]
     for resp in msg.mandrill_response:
-        if resp['status'] == 'sent':
+        status = resp['status']
+        if status in ('sent', 'queued'):
             result = resp['_id']
         else:
             raise MailError(
