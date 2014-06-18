@@ -20,6 +20,7 @@ class HomeView(ListView):
     model = Message
     template_name = 'example/home.html'
 
+
 class EnquiryListView(
         LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
 

@@ -1,22 +1,22 @@
 {% extends "mail/base.html" %}
 
 {% block title %}
-  Mail messages
+  Enquiries
 {% endblock title %}
 
 {% block sub_heading %}
-  Mail messages
+  Enquiries
 {% endblock sub_heading %}
 
 {% block content %}
-  <div class="pure-g-r">
+  <div class="pure-g">
     <div class="pure-u-1">
       <div class="l-box">
         <table class="pure-table pure-table-bordered">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Email Address</th>
+              <th>Created</th>
+              <th>Email address</th>
               <th>Message</th>
             </tr>
           </thead>
@@ -24,7 +24,7 @@
             {% for e in object_list %}
               <tr valign="top">
                 <td>
-                  {{ e.pk }}
+                  {{ e.created|date:'D jS M Y, H:i' }}
                 </td>
                 <td>
                   {{ e.email }}

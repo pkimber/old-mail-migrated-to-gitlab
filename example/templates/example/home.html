@@ -10,25 +10,25 @@
 {% endblock sub_heading %}
 
 {% block content %}
-  <div class="pure-g-r">
+  <div class="pure-g">
     <div class="pure-u-1">
       <div class="pure-menu pure-menu-open pure-menu-horizontal">
         <ul>
           <li>
             <a href="{% url 'mail.message.list' %}">
-              <i class="fa fa-comments-o"></i>
+              <i class="fa fa-envelope-o"></i>
               Messages
             </a>
           </li>
           <li>
             <a href="{% url 'mail.template.list' %}">
-              <i class="fa fa-lightbulb-o"></i>
+              <i class="fa fa-envelope"></i>
               Templates
             </a>
           </li>
           <li>
             <a href="{% url 'example.enquiry.list' %}">
-              <i class="fa fa-envelope-square"></i>
+              <i class="fa fa-comments-o"></i>
               Enquiries
             </a>
           </li>
