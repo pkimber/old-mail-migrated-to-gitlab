@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
+from login.tests.factories import TEST_PASSWORD
 from login.tests.scenario import (
     default_scenario_login,
     get_user_staff,
@@ -21,7 +22,9 @@ class TestView(TestCase):
     def setUp(self):
         default_scenario_login()
         staff = get_user_staff()
-        self.client.login(username=staff.username, password=staff.username)
+        self.assertTrue(
+            self.client.login(username=staff.username, password=TEST_PASSWORD)
+        )
 
     def test_template_update(self):
         template = init_mail_template(

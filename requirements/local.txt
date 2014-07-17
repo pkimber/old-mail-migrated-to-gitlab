@@ -4,6 +4,7 @@
 -e ../login
 beautifulsoup4
 fabric
+factory-boy
 gitpython
 hgapi
 ipdb
