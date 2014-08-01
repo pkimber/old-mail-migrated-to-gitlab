@@ -23,22 +23,41 @@
             {% for e in object_list %}
               <tr valign="top">
                 <td>
+                  {% if e.is_mandrill %}
+                    <strong>{{ e.title }}</strong>
+                  {% else %}
                   <a href="{% url 'mail.template.update' e.slug %}">
                     <i class="fa fa-edit"></i>
                     {{ e.title }}
                   </a>
+                  {% endif %}
                   <br />
                   <small>{{ e.slug }}</small>
                 </td>
                 <td>
-                  {% if e.subject %}
-                    <strong>{{ e.subject }}</strong>
-                  {% endif %}
-                  {% if e.subject and e.description %}
-                    <br />
-                  {% endif %}
-                  {% if e.description %}
-                    {{ e.description|urlize|linebreaksbr }}
+                  {% if e.is_mandrill %}
+                    <a
+                      target="_blank"
+                      href="https://mandrillapp.com/templates/preview?id={{ e.slug }}">
+                      Mandrill template
+                      <i class="fa fa-external-link"></i>
+                    </a>
+                    {% if e.help_text %}
+                      <br />
+                      <small>
+                      {{ e.help_text|linebreaksbr }}
+                      </small>
+                    {% endif %}
+                  {% else %}
+                    {% if e.subject %}
+                      <strong>{{ e.subject }}</strong>
+                    {% endif %}
+                    {% if e.subject and e.description %}
+                      <br />
+                    {% endif %}
+                    {% if e.description %}
+                      {{ e.description|urlize|linebreaksbr }}
+                    {% endif %}
                   {% endif %}
                 </td>
               </tr>
