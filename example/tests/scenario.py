@@ -8,6 +8,7 @@ from mail.models import (
 
 from mail.service import (
     init_mail_template,
+    queue_mail_message,
     queue_mail_template,
 )
 
@@ -22,6 +23,7 @@ def default_scenario_mail():
     queue_enquiry_acknowledgement()
     queue_enquiry_ack_with_copy()
     queue_enquiry_hello()
+    queue_enquiry_simple()
 
 
 def create_hello_template():
@@ -130,6 +132,15 @@ def queue_enquiry_goodbye(enq=None):
         enq,
         'goodbye',
         context,
+    )
+
+
+def queue_enquiry_simple():
+    queue_mail_message(
+        create_enquiry(),
+        ['test@pkimber.net',],
+        'England vs India',
+        'Who will win the series?',
     )
 
 

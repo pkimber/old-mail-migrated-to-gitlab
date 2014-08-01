@@ -193,6 +193,8 @@ CAPTCHA_TEST_MODE = True
 # django-compressor
 COMPRESS_ENABLED = False # defaults to the opposite of DEBUG
 
+EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
+
 FTP_STATIC_DIR = None
 FTP_STATIC_URL = None
 
@@ -208,7 +210,4 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 SENDFILE_ROOT = 'media-private'
 
 MANDRILL_API_KEY = get_env_variable("MANDRILL_API_KEY")
-
 MANDRILL_USER_NAME = get_env_variable("MANDRILL_USER_NAME")
-
-EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"

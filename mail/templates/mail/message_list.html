@@ -12,6 +12,7 @@
   <div class="pure-g">
     <div class="pure-u-1">
       <div class="l-box">
+        {% include 'base/_paginate.html' %}
         <table class="pure-table pure-table-bordered">
           <thead>
             <tr>
@@ -23,7 +24,7 @@
             {% for e in object_list %}
               <tr valign="top">
                 <td>
-                  {{ e.created|date:'D jS M Y, H:ia' }}
+                  {{ e.created|date:'D jS M Y, H:i A' }}
                   {% for m in e.mail_set.all %}
                     <br />
                     <small>
@@ -37,16 +38,26 @@
                   {% endfor %}
                 </td>
                 <td>
-                  <strong>{{ e.subject }}</strong>
-                  <br />
-                  {% autoescape off %}
-                    {{ e.description|urlize|linebreaksbr }}
-                  {% endautoescape off %}
+                  {% if e.is_mandrill %}
+                    <a
+                      target="_blank"
+                      href="https://mandrillapp.com/templates/preview?id={{ e.template.slug }}">
+                      Mandrill template
+                      <i class="fa fa-external-link"></i>
+                    </a>
+                  {% else %}
+                    <strong>{{ e.subject }}</strong>
+                    <br />
+                    {% autoescape off %}
+                      {{ e.description|urlize|linebreaksbr }}
+                    {% endautoescape off %}
+                  {% endif %}
                 </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
+        {% include 'base/_paginate.html' %}
       </div>
     </div>
   </div>

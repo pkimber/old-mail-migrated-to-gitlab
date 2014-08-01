@@ -41,3 +41,4 @@ class MessageListView(
         LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
 
     model = Message
+    paginate_by = 10

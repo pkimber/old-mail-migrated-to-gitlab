@@ -34,7 +34,7 @@ top level directory of the app.  This should contain the following::
 
 .. warning:: The ``.private`` file should not be added to a public repository,
              as it contains *secret* information.  So please do not add it to
-             ``git``.
+             ``git`` or ``mercurial``.
 
 To send email, use the ``mail_send`` management command::
 
@@ -65,4 +65,4 @@ Usage
 Release
 =======
 
-https://django-dev-and-deploy-using-salt.readthedocs.org/
+https://www.pkimber.net/open/

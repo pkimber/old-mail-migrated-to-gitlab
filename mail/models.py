@@ -47,6 +47,10 @@ class MailTemplate(TimeStampedModel):
         verbose_name = 'Template'
         verbose_name_plural = 'Template'
 
+    @property
+    def is_mandrill(self):
+        return self.template_type == TEMPLATE_TYPE_MANDRILL
+
     def __str__(self):
         return '{}'.format(self.title)
 
@@ -80,6 +84,10 @@ class Message(TimeStampedModel):
 
     def __str__(self):
         return '{}'.format(self.subject)
+
+    @property
+    def is_mandrill(self):
+        return self.template and self.template.is_mandrill
 
 reversion.register(Message)
 
