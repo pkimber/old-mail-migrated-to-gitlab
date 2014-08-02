@@ -130,13 +130,13 @@ def _send_mail_simple(m):
 def _send_mail_django_template(m):
     merge_vars = _get_merge_vars(m)
     subject, description = _mail_template_render(
-        m.message.template_slug,
+        m.message.template.slug,
         merge_vars,
     )
     msg = mail.EmailMultiAlternatives(
         subject=subject,
         from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
-        to=mail.email,
+        to=[m.email],
     )
     if m.message.template.is_html:
         msg.attach_alternative(description, "text/html")
@@ -225,14 +225,22 @@ def init_app_mail():
     pass
 
 
-def init_mail_template(slug, title, help_text, is_html, template_type):
+def init_mail_template(
+        slug, title, help_text, is_html, template_type,
+        subject=None, description=None):
     slug=slugify(slug)
+    if not subject:
+        subject = ''
+    if not description:
+        description = ''
     try:
         template = MailTemplate.objects.get(slug=slug)
         template.title = title
         template.help_text = help_text
         template.is_html = is_html
         template.template_type = template_type
+        template.subject = subject
+        template.description = description
         template.save()
     except MailTemplate.DoesNotExist:
         return clean_and_save(MailTemplate(**dict(
@@ -241,6 +249,8 @@ def init_mail_template(slug, title, help_text, is_html, template_type):
             help_text=help_text,
             is_html = is_html,
             template_type = template_type,
+            subject=subject,
+            description=description,
         )))
     return template
 

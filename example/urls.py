@@ -18,11 +18,10 @@ from .views import (
     EnquiryListView,
 )
 
-# Admin interface for djrill
-from djrill import DjrillAdminSite
-
-admin.site = DjrillAdminSite()
-#end Admin interface for djrill
+# Admin interface for djrill 02/08/2014 - doesn't appear to be working.
+# from djrill import DjrillAdminSite
+# admin.site = DjrillAdminSite()
+# end Admin interface for djrill
 
 admin.autodiscover()
 

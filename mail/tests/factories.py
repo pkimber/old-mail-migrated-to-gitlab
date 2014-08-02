@@ -6,6 +6,7 @@ import factory
 from mail.models import (
     MailTemplate,
     Message,
+    Notify,
 )
 
 
@@ -19,3 +20,9 @@ class MessageFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Message
+
+
+class NotifyFactory(factory.django.DjangoModelFactory):
+
+    class Meta:
+        model = Notify

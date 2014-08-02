@@ -78,7 +78,6 @@ class Message(TimeStampedModel):
 
     class Meta:
         ordering = ['-created']
-        unique_together = ('object_id', 'content_type')
         verbose_name = 'Mail message'
         verbose_name_plural = 'Mail messages'
 
@@ -133,3 +132,14 @@ class MailField(models.Model):
         )
 
 reversion.register(MailField)
+
+
+class Notify(TimeStampedModel):
+    """List of people to notify on an event e.g. enquiry or payment."""
+
+    email = models.EmailField()
+
+    def __str__(self):
+        return '{}'.format(self.email)
+
+reversion.register(Notify)
