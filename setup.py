@@ -28,7 +28,7 @@ setup(
             'templates/mail/*.*',
         ],
     },
-    version='0.1.12',
+    version='0.1.13',
     description='mail',
     author='Patrick Kimber',
     author_email='code@pkimber.net',
