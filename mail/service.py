@@ -99,7 +99,10 @@ def _mail_send(primary_keys):
             if result:
                 m.sent_response_code = result
         except (SMTPException, MailError, MailgunAPIError, MandrillAPIError) as e:
-            logger.error(e.message)
+            if hasattr(e, 'message'):
+                logger.error(e.message)
+            else:
+                logger.error(e)
             retry_count = m.retry_count or 0
             m.retry_count = retry_count + 1
         m.save()
