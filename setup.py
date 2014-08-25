@@ -19,7 +19,7 @@ def get_readme():
 
 
 setup(
-    name='pkimber-mail',
+    name='kb-mail',
     packages=['mail', 'mail.migrations', 'mail.tests', 'mail.management', 'mail.management.commands'],
     package_data={
         'mail': [
@@ -28,7 +28,7 @@ setup(
             'templates/mail/*.*',
         ],
     },
-    version='0.1.13',
+    version='0.1.14',
     description='mail',
     author='Patrick Kimber',
     author_email='code@pkimber.net',
