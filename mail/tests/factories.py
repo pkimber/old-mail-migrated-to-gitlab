@@ -15,6 +15,10 @@ class MailTemplateFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MailTemplate
 
+    @factory.sequence
+    def slug(n):
+        return 'template_{:02d}'.format(n)
+
 
 class MessageFactory(factory.django.DjangoModelFactory):
 
