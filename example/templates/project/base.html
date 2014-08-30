@@ -13,5 +13,16 @@
   Example App
 {% endblock sub_heading %}
 
+{% block menu %}
+  {% if user.is_staff %}
+    <li>
+      <a href="{% url 'project.settings' %}">
+        <i class="fa fa-cog"></i>
+        Settings
+      </a>
+    </li>
+  {% endif %}
+{% endblock menu %}
+
 {% block footer %}
 {% endblock footer %}
