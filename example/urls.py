@@ -15,6 +15,7 @@ from django.views.generic import RedirectView
 
 from .views import (
     HomeView,
+    EnquiryCreateView,
     EnquiryListView,
     SettingsView,
 )
@@ -41,15 +42,19 @@ urlpatterns = patterns(
     url(regex=r'^mail/',
         view=include('mail.urls')
         ),
-    url(regex=r'^enquiry/',
+    url(regex=r'^enquiry/$',
         view=EnquiryListView.as_view(),
         name='example.enquiry.list'
         ),
-    url(r'^dash/$',
+    url(regex=r'^enquiry/create/$',
+        view=EnquiryCreateView.as_view(),
+        name='example.enquiry.create'
+        ),
+    url(regex=r'^dash/$',
         view=RedirectView.as_view(url=reverse_lazy('project.home')),
         name='project.dash'
         ),
-    url(r'^settings/$',
+    url(regex=r'^settings/$',
         view=SettingsView.as_view(),
         name='project.settings'
         ),

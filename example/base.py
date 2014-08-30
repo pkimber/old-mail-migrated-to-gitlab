@@ -191,6 +191,12 @@ CAPTCHA_LETTER_ROTATION = None
 CAPTCHA_NOISE_FUNCTIONS = None
 CAPTCHA_TEST_MODE = True
 
+# Celery
+BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# https://kfalck.net/2013/02/21/run-multiple-celeries-on-a-single-redis
+CELERY_DEFAULT_QUEUE = 'mail'
+
 # django-compressor
 COMPRESS_ENABLED = False # defaults to the opposite of DEBUG
 
@@ -210,5 +216,8 @@ MAILGUN_SERVER_NAME = get_env_variable("MAILGUN_SERVER_NAME")
 SENDFILE_BACKEND = 'sendfile.backends.development'
 SENDFILE_ROOT = 'media-private'
 
+DEFAULT_FROM_EMAIL = 'web@pkimber.net'
+# See the list of constants at the top of 'mail.models'
+MAIL_TEMPLATE_TYPE = 'mandrill'
 MANDRILL_API_KEY = get_env_variable("MANDRILL_API_KEY")
 MANDRILL_USER_NAME = get_env_variable("MANDRILL_USER_NAME")

@@ -13,7 +13,7 @@ class Enquiry(TimeStampedModel):
     description = models.TextField()
 
     class Meta:
-        ordering = ['created']
+        ordering = ['-created']
         verbose_name = 'Enquiry'
         verbose_name_plural = 'Enquiries'
 
