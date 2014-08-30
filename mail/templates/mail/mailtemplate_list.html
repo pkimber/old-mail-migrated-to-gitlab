@@ -9,7 +9,31 @@
 {% endblock sub_heading %}
 
 {% block content %}
-  {% include 'base/_back_to_settings.html' %}
+  <div class="pure-g">
+    <div class="pure-u-1">
+      <div class="pure-menu pure-menu-open pure-menu-horizontal">
+        <ul>
+          <li>
+            <a href="{% url 'project.settings' %}">
+              <i class="fa fa-reply"></i>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'mail.template.create.django' %}">
+              <i class="fa fa-envelope"></i>
+              Create Django Template
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'mail.template.create.mandrill' %}">
+              <i class="fa fa-envelope"></i>
+              Create Mandrill Template
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
   <div class="pure-g">
     <div class="pure-u-1">
       <div class="l-box">
@@ -24,16 +48,21 @@
             {% for e in object_list %}
               <tr valign="top">
                 <td>
-                  {% if e.is_mandrill %}
-                    <strong>{{ e.title }}</strong>
-                  {% else %}
-                  <a href="{% url 'mail.template.update' e.slug %}">
+                  {# system templates cannot be edited #}
+                  {% if not e.is_system %}
+                    {% if e.is_mandrill %}
+                      <a href="{% url 'mail.template.update.mandrill' e.pk %}">
+                    {% else %}
+                      <a href="{% url 'mail.template.update.django' e.pk %}">
+                    {% endif %}
                     <i class="fa fa-edit"></i>
-                    {{ e.title }}
-                  </a>
                   {% endif %}
-                  <br />
-                  <small>{{ e.slug }}</small>
+                    {{ e.title }}
+                    <br />
+                    <small>{{ e.slug }}</small>
+                  {% if not e.is_system %}
+                    </a>
+                  {% endif %}
                 </td>
                 <td>
                   {% if e.is_mandrill %}

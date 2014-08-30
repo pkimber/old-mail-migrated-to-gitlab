@@ -32,12 +32,16 @@ class MailTemplate(TimeStampedModel):
 
     If this is a Mandrill template, then we will ignore the description and
     use the slug to lookup the template name using the API.
+
+    If this is a system template, then the user should not be allowed to edit
+    it.
     """
 
     slug = models.SlugField(unique=True)
     title = models.CharField(max_length=100)
     help_text = models.TextField(blank=True)
     is_html = models.BooleanField(default=False)
+    is_system = models.BooleanField(default=False)
     template_type = models.CharField(max_length=32, default=TEMPLATE_TYPE_DJANGO)
     subject = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)

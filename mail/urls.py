@@ -7,8 +7,11 @@ from django.conf.urls import (
 )
 
 from .views import (
+    MailTemplateCreateDjangoView,
+    MailTemplateCreateMandrillView,
     MailTemplateListView,
-    MailTemplateUpdateView,
+    MailTemplateUpdateDjangoView,
+    MailTemplateUpdateMandrillView,
     MessageListView,
 )
 
@@ -23,8 +26,20 @@ urlpatterns = patterns(
         view=MailTemplateListView.as_view(),
         name='mail.template.list'
         ),
-    url(regex=r'^template/(?P<slug>[-\w\d]+)/update/$',
-        view=MailTemplateUpdateView.as_view(),
-        name='mail.template.update'
+    url(regex=r'^template/create/django/$',
+        view=MailTemplateCreateDjangoView.as_view(),
+        name='mail.template.create.django'
+        ),
+    url(regex=r'^template/create/mandrill/$',
+        view=MailTemplateCreateMandrillView.as_view(),
+        name='mail.template.create.mandrill'
+        ),
+    url(regex=r'^template/(?P<pk>\d+)/update/django/$',
+        view=MailTemplateUpdateDjangoView.as_view(),
+        name='mail.template.update.django'
+        ),
+    url(regex=r'^template/(?P<pk>\d+)/update/mandrill/$',
+        view=MailTemplateUpdateMandrillView.as_view(),
+        name='mail.template.update.mandrill'
         ),
 )

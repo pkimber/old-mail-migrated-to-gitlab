@@ -235,17 +235,20 @@ def init_app_mail():
 
 def init_mail_template(
         slug, title, help_text, is_html, template_type,
-        subject=None, description=None):
+        subject=None, description=None, is_system=None):
     slug=slugify(slug)
     if not subject:
         subject = ''
     if not description:
         description = ''
+    if not is_system:
+        is_system = False
     try:
         template = MailTemplate.objects.get(slug=slug)
         template.title = title
         template.help_text = help_text
         template.is_html = is_html
+        template.is_system = is_system
         template.template_type = template_type
         template.subject = subject
         template.description = description
@@ -256,6 +259,7 @@ def init_mail_template(
             slug=slug,
             help_text=help_text,
             is_html = is_html,
+            is_system=is_system,
             template_type = template_type,
             subject=subject,
             description=description,

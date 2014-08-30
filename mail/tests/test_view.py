@@ -26,22 +26,24 @@ class TestView(TestCase):
             self.client.login(username=staff.username, password=TEST_PASSWORD)
         )
 
-    def test_template_update(self):
-        template = init_mail_template(
+    def test_template_update_django(self):
+        t = init_mail_template(
             'hello',
             'Welcome...',
             '',
             False,
             TEMPLATE_TYPE_DJANGO
         )
-        url = reverse('mail.template.update', kwargs=dict(slug=template.slug))
+        url = reverse('mail.template.update.django', kwargs=dict(pk=t.pk))
         response = self.client.post(
             url,
             dict(
+                slug='goodbye',
                 subject='123',
                 description='ABC',
+                title='Testing',
             )
         )
         self.assertEqual(response.status_code, 302)
-        template = MailTemplate.objects.get(slug='hello')
+        template = MailTemplate.objects.get(slug='goodbye')
         self.assertEqual('ABC', template.description)
