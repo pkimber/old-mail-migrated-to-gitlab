@@ -1,7 +1,10 @@
 # -*- encoding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.views.generic import ListView
+from django.views.generic import (
+    ListView,
+    TemplateView,
+)
 
 from braces.views import (
     LoginRequiredMixin,
@@ -25,3 +28,10 @@ class EnquiryListView(
         LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
 
     model = Enquiry
+
+
+class SettingsView(
+        LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, TemplateView):
+
+    model = Message
+    template_name = 'example/settings.html'

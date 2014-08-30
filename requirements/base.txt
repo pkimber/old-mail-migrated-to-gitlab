@@ -1,4 +1,5 @@
 bleach==1.4
+celery==3.1.13
 django-braces==1.4.0
 django-compressor==1.4
 django-reversion==1.8.0
@@ -9,4 +10,5 @@ git+https://github.com/pkimber/django-sendfile#egg=sendfile
 git+https://github.com/pkimber/Djrill.git#egg=djrill
 python-dateutil==2.2
 pytz==2014.2
+redis==2.10.1
 South==1.0

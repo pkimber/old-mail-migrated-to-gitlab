@@ -16,6 +16,7 @@ from django.views.generic import RedirectView
 from .views import (
     HomeView,
     EnquiryListView,
+    SettingsView,
 )
 
 # Admin interface for djrill 02/08/2014 - doesn't appear to be working.
@@ -44,9 +45,13 @@ urlpatterns = patterns(
         view=EnquiryListView.as_view(),
         name='example.enquiry.list'
         ),
-    url(r'^home/user/$',
+    url(r'^dash/$',
         view=RedirectView.as_view(url=reverse_lazy('project.home')),
         name='project.dash'
+        ),
+    url(r'^settings/$',
+        view=SettingsView.as_view(),
+        name='project.settings'
         ),
 )
 

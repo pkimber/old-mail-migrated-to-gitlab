@@ -67,12 +67,17 @@ def _get_merge_vars(mail_item):
 def _mail_process():
     primary_keys = []
     template_types = []
-    for m in Mail.objects.filter(sent__isnull=True):
-        primary_keys.append(m.pk)
-        if m.message.template:
-            template_types.append(m.message.template.template_type)
-    _check_backends(set(template_types))
-    _mail_send(primary_keys)
+    with transaction.atomic():
+        # only send once (if the function is called twice at the same time)
+        qs = Mail.objects.select_for_update(no_wait=True).filter(
+            sent__isnull=True
+        )
+        for m in qs:
+            primary_keys.append(m.pk)
+            if m.message.template:
+                template_types.append(m.message.template.template_type)
+        _check_backends(set(template_types))
+        _mail_send(primary_keys)
 
 
 def _render(text, context):
