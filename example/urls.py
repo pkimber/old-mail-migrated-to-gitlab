@@ -46,7 +46,7 @@ urlpatterns = patterns(
         ),
     url(r'^home/user/$',
         view=RedirectView.as_view(url=reverse_lazy('project.home')),
-        name='project.home.user'
+        name='project.dash'
         ),
 )
 

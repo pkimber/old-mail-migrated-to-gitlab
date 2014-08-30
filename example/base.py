@@ -201,7 +201,7 @@ FTP_STATIC_URL = None
 
 # URL where requests are redirected after login when the contrib.auth.login
 # view gets no next parameter.
-LOGIN_REDIRECT_URL = reverse_lazy('project.home.user')
+LOGIN_REDIRECT_URL = reverse_lazy('project.dash')
 
 # Put in the example app for testing purposes only
 MAILGUN_SERVER_NAME = get_env_variable("MAILGUN_SERVER_NAME")
