@@ -51,6 +51,8 @@ def _can_use_mandrill():
 
 def _check_backends(template_types):
     """Check the backend settings... so we can abort early."""
+    if not settings.DEFAULT_FROM_EMAIL:
+        raise MailError("No 'DEFAULT_FROM_EMAIL' address in 'settings'.")
     for t in template_types:
         if t == TEMPLATE_TYPE_DJANGO:
             _using_mailgun()
@@ -119,7 +121,7 @@ def _send_mail_simple(m):
         mail.send_mail(
             m.message.subject,
             m.message.description,
-            'notify@{}'.format(settings.MAILGUN_SERVER_NAME),
+            settings.DEFAULT_FROM_EMAIL,
             [m.email,],
             fail_silently=False,
             auth_user=settings.MANDRILL_USER_NAME,
@@ -129,7 +131,7 @@ def _send_mail_simple(m):
         mail.send_mail(
             m.message.subject,
             m.message.description,
-            'notify@{}'.format(settings.MAILGUN_SERVER_NAME),
+            settings.DEFAULT_FROM_EMAIL,
             [m.email,],
             fail_silently=False,
         )
@@ -143,7 +145,7 @@ def _send_mail_django_template(m):
     )
     msg = mail.EmailMultiAlternatives(
         subject=subject,
-        from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
+        from_email=settings.DEFAULT_FROM_EMAIL,
         to=[m.email],
     )
     if m.message.template.is_html:
@@ -160,7 +162,7 @@ def _send_mail_mandrill_template(m):
     email_addresses = [m.email,]
     msg = mail.EmailMultiAlternatives(
         subject=m.message.subject,
-        from_email='notify@{}'.format(settings.MAILGUN_SERVER_NAME),
+        from_email=settings.DEFAULT_FROM_EMAIL,
         to=email_addresses,
     )
     msg.metadata = {
