@@ -13,9 +13,17 @@ from django.template import (
 from django.utils import timezone
 from django.utils.text import slugify
 
-from django_mailgun import MailgunAPIError
+try:
+    from django_mailgun import MailgunAPIError
+except ImportError:
+    class MailgunAPIError(Exception):
+        pass
 
-from djrill import MandrillAPIError
+try:
+    from djrill import MandrillAPIError
+except ImportError:
+    class MandrillAPIError(Exception):
+        pass
 
 from smtplib import SMTPException
 
