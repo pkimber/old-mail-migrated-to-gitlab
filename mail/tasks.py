@@ -9,8 +9,3 @@ from .service import send_mail
 @shared_task
 def process_mail():
     send_mail()
-
-
-@shared_task
-def process_periodic_task():
-    send_mail()
