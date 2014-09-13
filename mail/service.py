@@ -63,10 +63,12 @@ def _check_backends(template_types):
         raise MailError("No 'DEFAULT_FROM_EMAIL' address in 'settings'.")
     for t in template_types:
         if t == TEMPLATE_TYPE_DJANGO:
-            _using_mailgun()
+            if _can_use_mandrill():
+                _using_mandrill()
+            else:
+                _using_mailgun()
         elif t == TEMPLATE_TYPE_MANDRILL:
             _using_mandrill()
-            _using_mailgun()
 
 
 def _get_merge_vars(mail_item):
