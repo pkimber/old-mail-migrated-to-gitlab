@@ -1,80 +1,107 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from __future__ import unicode_literals
+
+from django.db import models, migrations
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'Message'
-        db.create_table('mail_message', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(blank=True, auto_now_add=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(blank=True, auto_now=True)),
-            ('subject', self.gf('django.db.models.fields.CharField')(max_length=200)),
-            ('description', self.gf('django.db.models.fields.TextField')()),
-            ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
-        ))
-        db.send_create_signal('mail', ['Message'])
+    dependencies = [
+        ('contenttypes', '0001_initial'),
+    ]
 
-        # Adding unique constraint on 'Message', fields ['object_id', 'content_type']
-        db.create_unique('mail_message', ['object_id', 'content_type_id'])
-
-        # Adding model 'Mail'
-        db.create_table('mail_mail', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(blank=True, auto_now_add=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(blank=True, auto_now=True)),
-            ('message', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['mail.Message'])),
-            ('email', self.gf('django.db.models.fields.EmailField')(blank=True, max_length=75)),
-            ('retry_count', self.gf('django.db.models.fields.IntegerField')(blank=True, null=True)),
-            ('sent', self.gf('django.db.models.fields.DateTimeField')(blank=True, null=True)),
-        ))
-        db.send_create_signal('mail', ['Mail'])
-
-
-    def backwards(self, orm):
-        # Removing unique constraint on 'Message', fields ['object_id', 'content_type']
-        db.delete_unique('mail_message', ['object_id', 'content_type_id'])
-
-        # Deleting model 'Message'
-        db.delete_table('mail_message')
-
-        # Deleting model 'Mail'
-        db.delete_table('mail_mail')
-
-
-    models = {
-        'contenttypes.contenttype': {
-            'Meta': {'db_table': "'django_content_type'", 'object_name': 'ContentType', 'unique_together': "(('app_label', 'model'),)", 'ordering': "('name',)"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        'mail.mail': {
-            'Meta': {'object_name': 'Mail', 'ordering': "['created']"},
-            'created': ('django.db.models.fields.DateTimeField', [], {'blank': 'True', 'auto_now_add': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'blank': 'True', 'max_length': '75'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'message': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['mail.Message']"}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'blank': 'True', 'auto_now': 'True'}),
-            'retry_count': ('django.db.models.fields.IntegerField', [], {'blank': 'True', 'null': 'True'}),
-            'sent': ('django.db.models.fields.DateTimeField', [], {'blank': 'True', 'null': 'True'})
-        },
-        'mail.message': {
-            'Meta': {'object_name': 'Message', 'unique_together': "(('object_id', 'content_type'),)", 'ordering': "['created']"},
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'blank': 'True', 'auto_now_add': 'True'}),
-            'description': ('django.db.models.fields.TextField', [], {}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'blank': 'True', 'auto_now': 'True'}),
-            'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'subject': ('django.db.models.fields.CharField', [], {'max_length': '200'})
-        }
-    }
-
-    complete_apps = ['mail']
+    operations = [
+        migrations.CreateModel(
+            name='Mail',
+            fields=[
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('email', models.EmailField(max_length=75, blank=True)),
+                ('retry_count', models.IntegerField(null=True, blank=True)),
+                ('sent', models.DateTimeField(null=True, blank=True)),
+                ('sent_response_code', models.CharField(null=True, max_length=256, blank=True)),
+            ],
+            options={
+                'ordering': ['created'],
+                'verbose_name': 'Mail detail',
+                'verbose_name_plural': 'Mail detail',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='MailField',
+            fields=[
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('key', models.CharField(max_length=100)),
+                ('value', models.CharField(max_length=256)),
+                ('mail', models.ForeignKey(to='mail.Mail')),
+            ],
+            options={
+                'verbose_name': 'Mail field',
+                'verbose_name_plural': 'Mail fields',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='MailTemplate',
+            fields=[
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('slug', models.SlugField(unique=True)),
+                ('title', models.CharField(max_length=100)),
+                ('help_text', models.TextField(blank=True)),
+                ('is_html', models.BooleanField(default=False)),
+                ('is_system', models.BooleanField(default=False)),
+                ('template_type', models.CharField(default='django', max_length=32)),
+                ('subject', models.CharField(max_length=200, blank=True)),
+                ('description', models.TextField(blank=True)),
+            ],
+            options={
+                'ordering': ('title',),
+                'verbose_name': 'Template',
+                'verbose_name_plural': 'Template',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Message',
+            fields=[
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('subject', models.CharField(max_length=200)),
+                ('description', models.TextField(blank=True)),
+                ('is_html', models.BooleanField(default=False)),
+                ('object_id', models.PositiveIntegerField()),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('template', models.ForeignKey(null=True, blank=True, to='mail.MailTemplate')),
+            ],
+            options={
+                'ordering': ['-created'],
+                'verbose_name': 'Mail message',
+                'verbose_name_plural': 'Mail messages',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Notify',
+            fields=[
+                ('id', models.AutoField(auto_created=True, verbose_name='ID', serialize=False, primary_key=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('email', models.EmailField(max_length=75)),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
+        migrations.AddField(
+            model_name='mail',
+            name='message',
+            field=models.ForeignKey(to='mail.Message'),
+            preserve_default=True,
+        ),
+    ]

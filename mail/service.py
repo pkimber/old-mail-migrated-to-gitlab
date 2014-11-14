@@ -81,7 +81,7 @@ def _mail_process():
     template_types = []
     with transaction.atomic():
         # only send once (if the function is called twice at the same time)
-        qs = Mail.objects.select_for_update(no_wait=True).filter(
+        qs = Mail.objects.select_for_update(nowait=True).filter(
             sent__isnull=True
         )
         for m in qs:
