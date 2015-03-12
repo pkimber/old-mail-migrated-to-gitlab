@@ -300,7 +300,6 @@ def queue_mail_message(content_object, email_addresses, subject, description, is
     do any templating.
 
     """
-
     message = Message(**dict(
         content_object=content_object,
         subject=subject,
@@ -322,7 +321,7 @@ def queue_mail_template(content_object, template_slug, context):
     """Queue a mail message.  The message will be rendered using the template.
 
     When the mail is sent, the template will be found and rendered using
-    with Django or Mandrill.
+    Django or Mandrill.
 
     The context is a dict containing email addresses and optionally a
     key, value dict for each email address.
