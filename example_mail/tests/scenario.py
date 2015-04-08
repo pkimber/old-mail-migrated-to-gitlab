@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from mail.models import (
     TEMPLATE_TYPE_DJANGO,
     TEMPLATE_TYPE_MANDRILL,
@@ -12,8 +10,8 @@ from mail.service import (
     queue_mail_template,
 )
 
-from example.models import Enquiry
-from example.base import get_env_variable
+from example_mail.models import Enquiry
+from example_mail.base import get_env_variable
 
 
 def default_scenario_mail():

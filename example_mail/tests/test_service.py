@@ -1,13 +1,11 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.core import mail
 from django.test import TestCase
 
-from example.tests.model_maker import make_enquiry
-from example.base import get_env_variable
+from example_mail.tests.model_maker import make_enquiry
+from example_mail.base import get_env_variable
 from mail.models import (
     Mail,
     Message,

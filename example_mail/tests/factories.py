@@ -1,9 +1,7 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 import factory
 
-from example.models import Enquiry
+from example_mail.models import Enquiry
 
 
 class EnquiryFactory(factory.django.DjangoModelFactory):

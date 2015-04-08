@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.test import TestCase
 
 from mail.management.commands import init_app_mail
