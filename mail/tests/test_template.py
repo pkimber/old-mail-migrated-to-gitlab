@@ -1,48 +1,43 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.test import TestCase
 
 from mail.models import (
+    Mail,
     MailTemplate,
-    TEMPLATE_TYPE_DJANGO,
 )
-from mail.service import (
-    _mail_template_render,
-    init_mail_template,
-)
+from mail.service import _mail_template_render
 
 
 class TestMailTemplate(TestCase):
 
     def test_init_template(self):
-        init_mail_template(
+        MailTemplate.objects.init_mail_template(
             'hello',
             'Welcome to our mailing list.',
             "You can add the '{{ name }}' variable to this template.",
             False,
-            TEMPLATE_TYPE_DJANGO,
+            MailTemplate.DJANGO,
         )
 
     def test_init_template_update(self):
-        init_mail_template(
+        MailTemplate.objects.init_mail_template(
                 'hello',
                 'Welcome to our mailing list.',
                 '',
                 False,
-                TEMPLATE_TYPE_DJANGO
+                MailTemplate.DJANGO
         )
-        init_mail_template(
+        MailTemplate.objects.init_mail_template(
                 'hello',
                 'Welcome...',
                 '', False,
-                TEMPLATE_TYPE_DJANGO
+                MailTemplate.DJANGO
         )
         template = MailTemplate.objects.get(slug='hello')
         self.assertEqual(template.title, 'Welcome...')
 
     def test_render(self):
-        template = init_mail_template(
+        template = MailTemplate.objects.init_mail_template(
             'hello',
             'Welcome to our mailing list.',
             (
@@ -51,7 +46,7 @@ class TestMailTemplate(TestCase):
                 "'{{ title }}' name of the village."
             ),
             False,
-            TEMPLATE_TYPE_DJANGO,
+            MailTemplate.DJANGO
         )
         template.subject = 'Hello {{ name }}'
         template.description = 'Welcome to {{ title }}'

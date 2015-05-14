@@ -1,13 +1,8 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.test import TestCase
 
 from .factories import EnquiryFactory
-from mail.models import (
-    TEMPLATE_TYPE_DJANGO,
-    TEMPLATE_TYPE_MANDRILL,
-)
+from mail.models import MailTemplate
 from mail.tests.factories import (
     MailTemplateFactory,
     MessageFactory,
@@ -18,7 +13,7 @@ class TestMessage(TestCase):
 
     def test_is_mandrill(self):
         mandrill_template = MailTemplateFactory(
-            template_type=TEMPLATE_TYPE_MANDRILL
+            template_type=MailTemplate.MANDRILL
         )
         message = MessageFactory(
             content_object=EnquiryFactory(),
@@ -28,7 +23,7 @@ class TestMessage(TestCase):
 
     def test_is_not_mandrill(self):
         django_template = MailTemplateFactory(
-            template_type=TEMPLATE_TYPE_DJANGO
+            template_type=MailTemplate.DJANGO
         )
         message = MessageFactory(
             content_object=EnquiryFactory(),

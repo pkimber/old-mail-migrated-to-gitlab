@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 import logging
 
 from django.conf import settings
@@ -35,8 +33,6 @@ from .models import (
     MailField,
     MailTemplate,
     Message,
-    TEMPLATE_TYPE_DJANGO,
-    TEMPLATE_TYPE_MANDRILL,
 )
 
 
@@ -62,12 +58,12 @@ def _check_backends(template_types):
     if not settings.DEFAULT_FROM_EMAIL:
         raise MailError("No 'DEFAULT_FROM_EMAIL' address in 'settings'.")
     for t in template_types:
-        if t == TEMPLATE_TYPE_DJANGO:
+        if t == MailTemplate.DJANGO:
             if _can_use_mandrill():
                 _using_mandrill()
             else:
                 _using_mailgun()
-        elif t == TEMPLATE_TYPE_MANDRILL:
+        elif t == MailTemplate.MANDRILL:
             _using_mandrill()
 
 
@@ -106,9 +102,9 @@ def _mail_send(primary_keys):
                 template_type = m.message.template.template_type
             else:
                 template_type = None
-            if template_type == TEMPLATE_TYPE_DJANGO:
+            if template_type == MailTemplate.DJANGO:
                 result = _send_mail_django_template(m)
-            elif template_type == TEMPLATE_TYPE_MANDRILL:
+            elif template_type == MailTemplate.MANDRILL:
                 result = _send_mail_mandrill_template(m)
             else:
                 result = _send_mail_simple(m)
@@ -247,40 +243,6 @@ def get_mail_template(slug):
 
 def init_app_mail():
     pass
-
-
-def init_mail_template(
-        slug, title, help_text, is_html, template_type,
-        subject=None, description=None, is_system=None):
-    slug=slugify(slug)
-    if not subject:
-        subject = ''
-    if not description:
-        description = ''
-    if not is_system:
-        is_system = False
-    try:
-        template = MailTemplate.objects.get(slug=slug)
-        template.title = title
-        template.help_text = help_text
-        template.is_html = is_html
-        template.is_system = is_system
-        template.template_type = template_type
-        template.subject = subject
-        template.description = description
-        template.save()
-    except MailTemplate.DoesNotExist:
-        return clean_and_save(MailTemplate(**dict(
-            title=title,
-            slug=slug,
-            help_text=help_text,
-            is_html = is_html,
-            is_system=is_system,
-            template_type = template_type,
-            subject=subject,
-            description=description,
-        )))
-    return template
 
 
 def _mail_template_render(template_slug, context):
