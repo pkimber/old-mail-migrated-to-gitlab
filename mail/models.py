@@ -165,6 +165,7 @@ class MailField(models.Model):
     value = models.CharField(max_length=256)
 
     class Meta:
+        ordering = ['mail', 'key']
         verbose_name = 'Mail field'
         verbose_name_plural = 'Mail fields'
 
