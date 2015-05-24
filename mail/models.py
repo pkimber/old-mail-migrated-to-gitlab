@@ -8,8 +8,6 @@ import reversion
 from base.model_utils import TimeStampedModel
 
 
-
-
 class MailError(Exception):
 
     def __init__(self, value):
@@ -178,10 +176,19 @@ class MailField(models.Model):
 reversion.register(MailField)
 
 
+class NotifyManager(models.Manager):
+
+    def create_notify(self, email):
+        obj = self.model(email=email)
+        obj.save()
+        return obj
+
+
 class Notify(TimeStampedModel):
     """List of people to notify on an event e.g. enquiry or payment."""
 
     email = models.EmailField()
+    objects = NotifyManager()
 
     def __str__(self):
         return '{}'.format(self.email)
