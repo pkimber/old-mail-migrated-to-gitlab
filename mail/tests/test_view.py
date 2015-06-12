@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
@@ -10,11 +8,7 @@ from login.tests.scenario import (
     get_user_staff,
 )
 
-from mail.models import (
-    MailTemplate,
-    TEMPLATE_TYPE_DJANGO,
-)
-from mail.service import init_mail_template
+from mail.models import MailTemplate
 
 
 class TestView(TestCase):
@@ -27,12 +21,12 @@ class TestView(TestCase):
         )
 
     def test_template_update_django(self):
-        t = init_mail_template(
+        t = MailTemplate.objects.init_mail_template(
             'hello',
             'Welcome...',
             '',
             False,
-            TEMPLATE_TYPE_DJANGO
+            MailTemplate.DJANGO
         )
         url = reverse('mail.template.update.django', kwargs=dict(pk=t.pk))
         response = self.client.post(

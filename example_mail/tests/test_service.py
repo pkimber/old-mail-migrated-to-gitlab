@@ -8,15 +8,13 @@ from example_mail.tests.model_maker import make_enquiry
 from example_mail.base import get_env_variable
 from mail.models import (
     Mail,
+    MailTemplate,
     Message,
 )
 from mail.service import (
-    init_mail_template,
     queue_mail_message,
     queue_mail_template,
     send_mail,
-    TEMPLATE_TYPE_DJANGO,
-    TEMPLATE_TYPE_MANDRILL,
 )
 
 
@@ -45,12 +43,12 @@ class TestService(TestCase):
         return enquiry
 
     def _create_welcome_template(self):
-        welcome_template = init_mail_template(
+        welcome_template = MailTemplate.objects.init_mail_template(
             'welcome',
             'Welcome...',
             'Available variables {{name}} {{title}} and {{question}}',
             False,
-            TEMPLATE_TYPE_DJANGO,
+            MailTemplate.DJANGO,
         )
         welcome_template.subject = "Welcome {{name}}"
         welcome_template.description = (
@@ -65,12 +63,12 @@ class TestService(TestCase):
         return welcome_template
 
     def _create_goodbye_template(self):
-        goodbye_template = init_mail_template(
+        goodbye_template = MailTemplate.objects.init_mail_template(
             'goodbye',
             'Goodbye...',
             'Available variables *|name|* *|title|* and *|question|*',
             True,
-            TEMPLATE_TYPE_MANDRILL,
+            MailTemplate.MANDRILL,
         )
         goodbye_template.subject = "Goodbye *|name|*"
         goodbye_template.description = (

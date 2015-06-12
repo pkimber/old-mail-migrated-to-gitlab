@@ -1,11 +1,6 @@
 # -*- encoding: utf-8 -*-
-from mail.models import (
-    TEMPLATE_TYPE_DJANGO,
-    TEMPLATE_TYPE_MANDRILL,
-)
-
+from mail.models import MailTemplate
 from mail.service import (
-    init_mail_template,
     queue_mail_message,
     queue_mail_template,
 )
@@ -25,7 +20,7 @@ def default_scenario_mail():
 
 
 def create_hello_template():
-    hello_template = init_mail_template(
+    hello_template = MailTemplate.objects.init_mail_template(
         'hello',
         'Welcome to our mailing list.',
         (
@@ -34,7 +29,7 @@ def create_hello_template():
             "{{ title }} name of the village."
         ),
         is_html=False,
-        template_type=TEMPLATE_TYPE_DJANGO,
+        template_type=MailTemplate.DJANGO,
     )
     hello_template.subject = "hello {{ name }}"
     hello_template.description = (
@@ -47,7 +42,7 @@ def create_hello_template():
 
 
 def create_goodbye_template():
-    goodbye_template = init_mail_template(
+    goodbye_template = MailTemplate.objects.init_mail_template(
         'goodbye',
         'Sorry to see you go...',
         (
@@ -56,9 +51,8 @@ def create_goodbye_template():
             "{{ age }} age of the customer."
         ),
         is_html=False,
-        template_type=TEMPLATE_TYPE_DJANGO,
+        template_type=MailTemplate.DJANGO,
     )
-
     goodbye_template.subject = "goodbye {{ name }}"
     goodbye_template.description = (
         "Dear {{name}},\n"
@@ -69,7 +63,7 @@ def create_goodbye_template():
 
 
 def create_email_ack_template():
-    template = init_mail_template(
+    template = MailTemplate.objects.init_mail_template(
         'enquiry_acknowledgement',
         'Enquiry acknowledgement',
         (
@@ -79,7 +73,7 @@ def create_email_ack_template():
             '*|DATE|* The date of the original enquiry\n'
         ),
         is_html=True,
-        template_type=TEMPLATE_TYPE_MANDRILL,
+        template_type=MailTemplate.MANDRILL,
     )
     template.subject='Re: *|SUBJECT|*'
     template.description= (

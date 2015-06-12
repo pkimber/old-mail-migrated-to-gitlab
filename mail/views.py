@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.core.urlresolvers import reverse
 from django.views.generic import (
     CreateView,
@@ -24,8 +22,6 @@ from .forms import (
 from .models import (
     Message,
     MailTemplate,
-    TEMPLATE_TYPE_DJANGO,
-    TEMPLATE_TYPE_MANDRILL,
 )
 
 
