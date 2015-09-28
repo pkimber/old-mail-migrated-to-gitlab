@@ -1,4 +1,3 @@
-recursive-include mail/static *
 recursive-include mail/templates *
 
 include LICENSE
