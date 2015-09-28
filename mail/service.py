@@ -238,7 +238,10 @@ def _using_mandrill():
 
 def get_mail_template(slug):
     slug = slugify(slug)
-    return MailTemplate.objects.get(slug=slug)
+    try:
+        return MailTemplate.objects.get(slug=slug)
+    except MailTemplate.DoesNotExist:
+        raise MailError("Mail template '{}' does not exist.".format(slug))
 
 
 def init_app_mail():
