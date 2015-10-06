@@ -90,6 +90,8 @@ class TestService(TestCase):
 
     def test_queue_mail_message(self):
         email_address = get_env_variable('TEST_EMAIL_ADDRESS_2')
+        if not email_address:
+            raise MailError("Cannot test without a 'TEST_EMAIL_ADDRESS_2'")
         enquiry = make_enquiry(
             email_address,
             "Welcome",
@@ -132,7 +134,7 @@ class TestService(TestCase):
         # test the send facility using djrill mail backend
         temp_email_backend = settings.EMAIL_BACKEND
         settings.EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
-        settings.MANDRILL_API_KEY = get_env_variable('TEST_MANDRILL_API_KEY')
+        settings.MANDRILL_API_KEY = get_env_variable('MANDRILL_API_KEY')
         send_mail()
         # self.assertEqual(len(mail.outbox), 1)
         m = self._mail(enquiry)

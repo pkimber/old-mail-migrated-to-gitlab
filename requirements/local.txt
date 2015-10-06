@@ -8,7 +8,6 @@ fabric
 factory-boy
 gitpython
 hgapi
-ipdb
 psycopg2
 pytest-django
 pytest-flakes

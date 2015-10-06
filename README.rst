@@ -1,12 +1,9 @@
 mail
 ****
 
-Django application for an sending email.
+Django application for sending mail.
 
-For notes:
-https://django-dev-and-deploy-using-salt.readthedocs.org/en/latest/app-mail.html
-or
-https://github.com/pkimber/docs/blob/master/source/app-mail.rst
+https://www.pkimber.net/open/app-mail.html
 
 Development
 ===========
@@ -21,10 +18,9 @@ Virtual Environment
 
 ::
 
-  pyvenv-3.4 --without-pip venv-mail
+  virtualenv --python=python3.4 venv-mail
   source venv-mail/bin/activate
-  wget https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py
-  python get-pip.py
+  pip install --upgrade pip
 
   pip install -r requirements/local.txt
 
