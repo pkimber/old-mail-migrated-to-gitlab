@@ -36,66 +36,64 @@
   </div>
   <div class="pure-g">
     <div class="pure-u-1">
-      <div class="l-box">
-        <table class="pure-table pure-table-bordered">
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th>Message</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for e in object_list %}
-              <tr valign="top">
-                <td>
-                  {# system templates cannot be edited #}
-                  {% if not e.is_system %}
-                    {% if e.is_mandrill %}
-                      <a href="{% url 'mail.template.update.mandrill' e.pk %}">
-                    {% else %}
-                      <a href="{% url 'mail.template.update.django' e.pk %}">
-                    {% endif %}
-                    <i class="fa fa-edit"></i>
-                  {% endif %}
-                    {{ e.title }}
-                    <br />
-                    <small>{{ e.slug }}</small>
-                  {% if not e.is_system %}
-                    </a>
-                  {% endif %}
-                </td>
-                <td>
+      <table class="pure-table pure-table-bordered">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in object_list %}
+            <tr valign="top">
+              <td>
+                {# system templates cannot be edited #}
+                {% if not e.is_system %}
                   {% if e.is_mandrill %}
-                    <a
-                      target="_blank"
-                      href="https://mandrillapp.com/templates/">
-                      Mandrill template
-                      <small>({{ e.slug }})</small>
-                      <i class="fa fa-external-link"></i>
-                    </a>
-                    {% if e.help_text %}
-                      <br />
-                      <small>
-                      {{ e.help_text|linebreaksbr }}
-                      </small>
-                    {% endif %}
+                    <a href="{% url 'mail.template.update.mandrill' e.pk %}">
                   {% else %}
-                    {% if e.subject %}
-                      <strong>{{ e.subject }}</strong>
-                    {% endif %}
-                    {% if e.subject and e.description %}
-                      <br />
-                    {% endif %}
-                    {% if e.description %}
-                      {{ e.description|urlize|linebreaksbr }}
-                    {% endif %}
+                    <a href="{% url 'mail.template.update.django' e.pk %}">
                   {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+                  <i class="fa fa-edit"></i>
+                {% endif %}
+                  {{ e.title }}
+                  <br />
+                  <small>{{ e.slug }}</small>
+                {% if not e.is_system %}
+                  </a>
+                {% endif %}
+              </td>
+              <td>
+                {% if e.is_mandrill %}
+                  <a
+                    target="_blank"
+                    href="https://mandrillapp.com/templates/">
+                    Mandrill template
+                    <small>({{ e.slug }})</small>
+                    <i class="fa fa-external-link"></i>
+                  </a>
+                  {% if e.help_text %}
+                    <br />
+                    <small>
+                    {{ e.help_text|linebreaksbr }}
+                    </small>
+                  {% endif %}
+                {% else %}
+                  {% if e.subject %}
+                    <strong>{{ e.subject }}</strong>
+                  {% endif %}
+                  {% if e.subject and e.description %}
+                    <br />
+                  {% endif %}
+                  {% if e.description %}
+                    {{ e.description|urlize|linebreaksbr }}
+                  {% endif %}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 {% endblock content %}
