@@ -7,7 +7,7 @@ from .models import MailTemplate
 class MailTemplateCreateDjangoForm(RequiredFieldForm):
 
     def __init__(self, *args, **kwargs):
-        super(MailTemplateCreateDjangoForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for name in ('subject', 'description', 'title'):
             self.fields[name].widget.attrs.update(
                 {'class': 'pure-input-2-3'}
@@ -26,7 +26,7 @@ class MailTemplateCreateDjangoForm(RequiredFieldForm):
 class MailTemplateCreateMandrillForm(RequiredFieldForm):
 
     def __init__(self, *args, **kwargs):
-        super(MailTemplateCreateMandrillForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for name in ('title',):
             self.fields[name].widget.attrs.update(
                 {'class': 'pure-input-2-3'}
@@ -43,7 +43,7 @@ class MailTemplateCreateMandrillForm(RequiredFieldForm):
 class MailTemplateUpdateDjangoForm(RequiredFieldForm):
 
     def __init__(self, *args, **kwargs):
-        super(MailTemplateUpdateDjangoForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for name in ('subject', 'description', 'title'):
             self.fields[name].widget.attrs.update(
                 {'class': 'pure-input-2-3'}
@@ -62,7 +62,7 @@ class MailTemplateUpdateDjangoForm(RequiredFieldForm):
 class MailTemplateUpdateMandrillForm(RequiredFieldForm):
 
     def __init__(self, *args, **kwargs):
-        super(MailTemplateUpdateMandrillForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for name in ('title',):
             self.fields[name].widget.attrs.update(
                 {'class': 'pure-input-2-3'}

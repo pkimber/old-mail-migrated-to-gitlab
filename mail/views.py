@@ -34,8 +34,8 @@ class MailTemplateCreateDjangoView(
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        self.object.template_type = TEMPLATE_TYPE_DJANGO
-        return super(MailTemplateCreateDjangoView, self).form_valid(form)
+        self.object.template_type = MailTemplate.DJANGO
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('mail.template.list')
@@ -50,12 +50,11 @@ class MailTemplateCreateMandrillView(
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        self.object.template_type = TEMPLATE_TYPE_MANDRILL
-        return super(MailTemplateCreateMandrillView, self).form_valid(form)
+        self.object.template_type = MailTemplate.MANDRILL
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('mail.template.list')
-
 
 
 class MailTemplateListView(
