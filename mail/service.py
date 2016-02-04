@@ -211,8 +211,8 @@ def _send_mail_mandrill_template(m):
             reason = ''
             if hasattr(resp, 'reject_reason'):
                 reason = resp.reject_reason
-            raise MailError("Failed to send message [{}] {}: {}".format(
-                status, msg, reason
+            raise MailError("Failed to send message '{}' to '{}' [{}] {}: {}".format(
+                m.pk, m.email, status, msg, reason
             ))
     return result
 

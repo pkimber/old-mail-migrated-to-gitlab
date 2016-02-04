@@ -2,10 +2,27 @@
 import factory
 
 from mail.models import (
+    Mail,
     MailTemplate,
     Message,
     Notify,
 )
+
+
+class MailFactory(factory.django.DjangoModelFactory):
+    """
+
+    message = MessageFactory(content_object=EnquiryFactory())
+    obj = MailFactory(message=message)
+
+    """
+
+    class Meta:
+        model = Mail
+
+    @factory.sequence
+    def email(n):
+        return 'mail_{:02d}@test.com'.format(n)
 
 
 class MailTemplateFactory(factory.django.DjangoModelFactory):
@@ -22,6 +39,8 @@ class MessageFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Message
+
+    template = factory.SubFactory(MailTemplateFactory)
 
 
 class NotifyFactory(factory.django.DjangoModelFactory):

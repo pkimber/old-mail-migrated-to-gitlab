@@ -136,7 +136,7 @@ class Mail(TimeStampedModel):
     """email messages to send."""
 
     message = models.ForeignKey(Message)
-    email = models.EmailField(blank=True)
+    email = models.EmailField()
     retry_count = models.IntegerField(blank=True, null=True)
     sent = models.DateTimeField(blank=True, null=True)
     sent_response_code = models.CharField(max_length=256, blank=True, null=True)
