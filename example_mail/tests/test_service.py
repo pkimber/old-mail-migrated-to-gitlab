@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 import pytest
 
+from unittest import mock
+
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
 from django.test import TestCase
@@ -120,33 +122,39 @@ def test_queue_mail_message():
 
 @pytest.mark.django_db
 def test_queue_mail_message_and_send_via_mandrill(settings):
-    email_address = get_env_variable('TEST_EMAIL_ADDRESS_2')
-    enquiry = make_enquiry(
-        email_address,
-        "Welcome",
-        'Can I join your club?',
-    )
-    template = _create_goodbye_template()
-    content_data = {
-        email_address: {
-            "name": "Fred",
-            "title": "SpaceX",
-            "question": enquiry.description
-        }
-    }
-    queue_mail_template(enquiry, template.slug, content_data)
-    m = _mail(enquiry)
-    assert m.sent is None
-    assert m.sent_response_code is None
-    assert m.message.subject == 'Goodbye *|name|*'
-    # test the send facility using djrill mail backend
-    temp_email_backend = settings.EMAIL_BACKEND
     settings.EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
-    settings.MANDRILL_API_KEY = get_env_variable('MANDRILL_API_KEY')
-    send_mail()
-    m = _mail(enquiry)
-    assert m.sent is not None
-    assert m.sent_response_code is not None
+    with mock.patch('django.core.mail.EmailMultiAlternatives') as mock_mail:
+        mock_mail.return_value.mandrill_response = [{
+            "email": "abc@test.com",
+            "status": "sent",
+            "_id": "123",
+            "reject_reason": None,
+        }]
+        email_address = get_env_variable('TEST_EMAIL_ADDRESS_2')
+        enquiry = make_enquiry(
+            email_address,
+            "Welcome",
+            'Can I join your club?',
+        )
+        template = _create_goodbye_template()
+        content_data = {
+            email_address: {
+                "name": "Fred",
+                "title": "SpaceX",
+                "question": enquiry.description
+            }
+        }
+        queue_mail_template(enquiry, template.slug, content_data)
+        m = _mail(enquiry)
+        assert m.sent is None
+        assert m.sent_response_code is None
+        assert m.message.subject == 'Goodbye *|name|*'
+        # test the send facility using djrill mail backend
+        temp_email_backend = settings.EMAIL_BACKEND
+        send_mail()
+        m = _mail(enquiry)
+        assert m.sent is not None
+        assert m.sent_response_code is not None
 
 
 @pytest.mark.django_db
