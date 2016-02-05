@@ -205,14 +205,14 @@ def _send_mail_mandrill_template(m):
         if status in ('sent', 'queued'):
             result = resp['_id']
         else:
-            msg = ''
-            if hasattr(resp, 'email'):
-                msg = ' to '.format(resp.email)
+            email = ''
+            if 'email' in resp:
+                email = resp['email']
             reason = ''
-            if hasattr(resp, 'reject_reason'):
-                reason = resp.reject_reason
-            raise MailError("Failed to send message '{}' to '{}' [{}] {}: {}".format(
-                m.pk, m.email, status, msg, reason
+            if 'reject_reason' in resp:
+                reason = resp['reject_reason']
+            raise MailError("Failed to send mail '{}' to '{}' [{}] [{}] [{}]".format(
+                m.pk, m.email, status, email, reason
             ))
     return result
 

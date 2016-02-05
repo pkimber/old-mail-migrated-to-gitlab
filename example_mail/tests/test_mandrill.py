@@ -20,7 +20,12 @@ from .factories import EnquiryFactory
 
 
 @pytest.mark.django_db
-def test_mail_send(client):
+def test_mail_process():
+    pass
+
+
+@pytest.mark.django_db
+def test_mail_send():
     with mock.patch('django.core.mail.EmailMultiAlternatives') as mock_mail:
         mock_mail.return_value.mandrill_response = [{
             "email": "abc@test.com",
@@ -40,7 +45,7 @@ def test_mail_send(client):
 
 
 @pytest.mark.django_db
-def test_send_mail_mandrill_template(client):
+def test_send_mail_mandrill_template():
     with mock.patch('django.core.mail.EmailMultiAlternatives') as mock_mail:
         mock_mail.return_value.mandrill_response = [{
             "email": "abc@test.com",
@@ -52,4 +57,7 @@ def test_send_mail_mandrill_template(client):
         obj = MailFactory(message=message)
         with pytest.raises(MailError) as e:
             _send_mail_mandrill_template(obj)
-        assert 'Failed to send message' in str(e.value)
+        msg = str(e.value)
+        assert 'Failed to send mail' in msg
+        assert '[abc@test.com]' in msg
+        assert '[hard-bounce]' in msg
