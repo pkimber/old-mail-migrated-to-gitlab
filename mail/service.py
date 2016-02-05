@@ -4,6 +4,7 @@ import logging
 from django.conf import settings
 from django.core import mail
 from django.db import transaction
+from django.db.models import Q
 from django.template import (
     Context,
     Template,
@@ -74,18 +75,24 @@ def _get_merge_vars(mail_item):
 
 def _mail_process():
     primary_keys = []
+    sent = []
     template_types = []
     with transaction.atomic():
         # only send once (if the function is called twice at the same time)
         qs = Mail.objects.select_for_update(nowait=True).filter(
-            sent__isnull=True
+            Q(sent__isnull=True)
+            &
+            (Q(retry_count__lte=10) | Q(retry_count__isnull=True))
+        ).order_by(
+            'pk'
         )
         for m in qs:
             primary_keys.append(m.pk)
             if m.message.template:
                 template_types.append(m.message.template.template_type)
         _check_backends(set(template_types))
-        _mail_send(primary_keys)
+        sent = _mail_send(primary_keys)
+    return sent
 
 
 def _render(text, context):
@@ -95,7 +102,9 @@ def _render(text, context):
 
 
 def _mail_send(primary_keys):
+    sent = []
     for pk in primary_keys:
+        result = None
         m = Mail.objects.get(pk=pk)
         try:
             if m.message.template:
@@ -109,8 +118,7 @@ def _mail_send(primary_keys):
             else:
                 result = _send_mail_simple(m)
             m.sent = timezone.now()
-            if result:
-                m.sent_response_code = result
+            sent.append(m.pk)
         except (SMTPException, MailError, MailgunAPIError, MandrillAPIError) as e:
             if hasattr(e, 'message'):
                 logger.error(e.message)
@@ -118,7 +126,10 @@ def _mail_send(primary_keys):
                 logger.error(e)
             retry_count = m.retry_count or 0
             m.retry_count = retry_count + 1
+        if result:
+            m.sent_response_code = result
         m.save()
+    return sent
 
 
 def _send_mail_simple(m):
@@ -208,11 +219,10 @@ def _send_mail_mandrill_template(m):
             email = ''
             if 'email' in resp:
                 email = resp['email']
-            reason = ''
             if 'reject_reason' in resp:
-                reason = resp['reject_reason']
+                result = resp['reject_reason']
             raise MailError("Failed to send mail '{}' to '{}' [{}] [{}] [{}]".format(
-                m.pk, m.email, status, email, reason
+                m.pk, m.email, status, email, result
             ))
     return result
 
