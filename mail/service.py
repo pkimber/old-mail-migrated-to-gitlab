@@ -118,6 +118,8 @@ def _mail_send(primary_keys):
             else:
                 result = _send_mail_simple(m)
             m.sent = timezone.now()
+            if result:
+                m.sent_response_code = result
             sent.append(m.pk)
         except (SMTPException, MailError, MailgunAPIError, MandrillAPIError) as e:
             if hasattr(e, 'message'):
@@ -126,8 +128,6 @@ def _mail_send(primary_keys):
                 logger.error(e)
             retry_count = m.retry_count or 0
             m.retry_count = retry_count + 1
-        if result:
-            m.sent_response_code = result
         m.save()
     return sent
 
@@ -220,9 +220,9 @@ def _send_mail_mandrill_template(m):
             if 'email' in resp:
                 email = resp['email']
             if 'reject_reason' in resp:
-                result = resp['reject_reason']
+                reason = resp['reject_reason']
             raise MailError("Failed to send mail '{}' to '{}' [{}] [{}] [{}]".format(
-                m.pk, m.email, status, email, result
+                m.pk, m.email, status, email, reason
             ))
     return result
 

@@ -44,6 +44,8 @@ def test_mail_process(settings):
         m7 = MailFactory(message=message, retry_count=99)
         sent = _mail_process()
         assert [m1.pk, m2.pk, m4.pk, m5.pk, m6.pk] == sent
+        m1.refresh_from_db()
+        assert '123' == m1.sent_response_code
 
 
 @pytest.mark.django_db
@@ -64,6 +66,26 @@ def test_mail_send_rejected():
         _mail_send([obj.pk])
         obj.refresh_from_db()
         assert 1 == obj.retry_count
+
+
+@pytest.mark.django_db
+def test_mail_send_rejected_again():
+    with mock.patch('django.core.mail.EmailMultiAlternatives') as mock_mail:
+        mock_mail.return_value.mandrill_response = [{
+            "email": "abc@test.com",
+            "status": "rejected",
+            "_id": "123",
+            "reject_reason": "hard-bounce"
+        }]
+        template = MailTemplateFactory(template_type=MailTemplate.MANDRILL)
+        message = MessageFactory(
+            template=template,
+            content_object=EnquiryFactory(),
+        )
+        obj = MailFactory(message=message, retry_count=4)
+        _mail_send([obj.pk])
+        obj.refresh_from_db()
+        assert 5 == obj.retry_count
 
 
 @pytest.mark.django_db
