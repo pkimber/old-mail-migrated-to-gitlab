@@ -5,7 +5,6 @@ from unittest import mock
 
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
-from django.test import TestCase
 
 from example_mail.tests.model_maker import make_enquiry
 from example_mail.base import get_env_variable
@@ -151,7 +150,7 @@ def test_queue_mail_message_and_send_via_mandrill(settings):
         assert m.sent_response_code is None
         assert m.message.subject == 'Goodbye *|name|*'
         # test the send facility using djrill mail backend
-        temp_email_backend = settings.EMAIL_BACKEND
+        # temp_email_backend = settings.EMAIL_BACKEND
         send_mail()
         m = _mail(enquiry)
         assert m.sent is not None

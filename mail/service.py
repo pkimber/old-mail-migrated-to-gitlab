@@ -26,8 +26,6 @@ except ImportError:
 
 from smtplib import SMTPException
 
-from base.tests.model_maker import clean_and_save
-
 from .models import (
     Mail,
     MailError,

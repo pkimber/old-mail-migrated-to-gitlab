@@ -1,10 +1,7 @@
 # -*- encoding: utf-8 -*-
 from django.test import TestCase
 
-from mail.models import (
-    Mail,
-    MailTemplate,
-)
+from mail.models import MailTemplate
 from mail.service import _mail_template_render
 
 

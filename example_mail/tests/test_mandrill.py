@@ -37,11 +37,11 @@ def test_mail_process(settings):
         )
         m1 = MailFactory(message=message)
         m2 = MailFactory(message=message, retry_count=9)
-        m3 = MailFactory(message=message, retry_count=11)
+        MailFactory(message=message, retry_count=11)
         m4 = MailFactory(message=message)
         m5 = MailFactory(message=message, retry_count=0)
         m6 = MailFactory(message=message, retry_count=1)
-        m7 = MailFactory(message=message, retry_count=99)
+        MailFactory(message=message, retry_count=99)
         sent = _mail_process()
         assert [m1.pk, m2.pk, m4.pk, m5.pk, m6.pk] == sent
         m1.refresh_from_db()
