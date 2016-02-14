@@ -11,6 +11,7 @@ from example_mail.tests.model_maker import make_enquiry
 from example_mail.base import get_env_variable
 from mail.models import (
     Mail,
+    MailError,
     MailTemplate,
     Message,
 )
@@ -155,6 +156,24 @@ def test_queue_mail_message_and_send_via_mandrill(settings):
         m = _mail(enquiry)
         assert m.sent is not None
         assert m.sent_response_code is not None
+
+
+@pytest.mark.django_db
+def test_queue_no_email():
+    email_address = get_env_variable('TEST_EMAIL_ADDRESS_1')
+    enquiry = make_enquiry(
+        email_address,
+        "Farming",
+        'How many cows in the field?',
+    )
+    with pytest.raises(MailError) as e:
+        queue_mail_message(
+            enquiry,
+            [],
+            enquiry.subject,
+            enquiry.description,
+        )
+    assert "Cannot 'queue_mail_message' without 'email_addresses'" in str(e.value)
 
 
 @pytest.mark.django_db

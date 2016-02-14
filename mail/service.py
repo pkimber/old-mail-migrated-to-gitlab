@@ -275,6 +275,11 @@ def queue_mail_message(content_object, email_addresses, subject, description, is
     do any templating.
 
     """
+    if not email_addresses:
+        raise MailError(
+            "Cannot 'queue_mail_message' without "
+            "'email_addresses': '{}'".format(subject)
+        )
     message = Message(**dict(
         content_object=content_object,
         subject=subject,
