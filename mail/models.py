@@ -3,7 +3,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-import reversion
+from reversion import revisions as reversion
 
 from base.model_utils import TimeStampedModel
 

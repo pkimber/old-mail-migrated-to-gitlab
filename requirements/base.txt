@@ -3,7 +3,7 @@ celery==3.1.18
 django-braces==1.8.1
 django-compressor==1.5
 django-redis==4.2.0
-django-reversion==1.9.3
+django-reversion==1.10.1
 django-sendfile==0.3.9
 Django==1.8.9
 djrill==1.4.0
