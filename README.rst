@@ -66,14 +66,7 @@ Create a test database::
 
 Initialise the test database::
 
-  py.test -x && \
-      touch temp.db && rm temp.db && \
-      django-admin.py syncdb --noinput && \
-      django-admin.py migrate --all --noinput && \
-      django-admin.py demo_data_login && \
-      django-admin.py init_app_mail && \
-      django-admin.py demo_data_mail && \
-      django-admin.py runserver
+  ./init_dev.sh
 
 You will need to open three terminal windows::
 
