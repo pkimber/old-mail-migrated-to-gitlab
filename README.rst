@@ -1,9 +1,8 @@
 mail
 ****
 
-Django application for sending mail.
-
-https://www.pkimber.net/open/app-mail.html
+Django application for sending mail:
+https://www.kbsoftware.co.uk/docs/app-mail.html
 
 Development
 ===========
@@ -99,4 +98,4 @@ To send email, use the ``mail_send`` management command::
 Release
 =======
 
-https://www.pkimber.net/open/
+https://www.kbsoftware.co.uk/docs/
