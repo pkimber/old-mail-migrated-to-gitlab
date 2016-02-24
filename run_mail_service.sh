@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd ~/repo/dev/app/mail
+cd ${HOME}/repo/dev/app/mail
 
 source .env
 
