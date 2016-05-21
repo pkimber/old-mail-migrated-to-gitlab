@@ -40,4 +40,5 @@ venv-*
 .pydevproject
 
 # private info
+.env.fish
 .private
