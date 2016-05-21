@@ -9,7 +9,7 @@ from mail.models import (
 )
 from mail.service import (
     _mail_process,
-    _mail_send,
+    _mail_select_and_send,
     _send_mail_mandrill_template,
 )
 from mail.tests.factories import (
@@ -49,7 +49,7 @@ def test_mail_process(settings):
 
 
 @pytest.mark.django_db
-def test_mail_send_rejected():
+def test_mail_select_and_send_rejected():
     with mock.patch('django.core.mail.EmailMultiAlternatives') as mock_mail:
         mock_mail.return_value.mandrill_response = [{
             "email": "abc@test.com",
@@ -63,13 +63,13 @@ def test_mail_send_rejected():
             content_object=EnquiryFactory(),
         )
         obj = MailFactory(message=message)
-        _mail_send([obj.pk])
+        _mail_select_and_send([obj.pk])
         obj.refresh_from_db()
         assert 1 == obj.retry_count
 
 
 @pytest.mark.django_db
-def test_mail_send_rejected_again():
+def test_mail_select_and_send_rejected_again():
     with mock.patch('django.core.mail.EmailMultiAlternatives') as mock_mail:
         mock_mail.return_value.mandrill_response = [{
             "email": "abc@test.com",
@@ -83,7 +83,7 @@ def test_mail_send_rejected_again():
             content_object=EnquiryFactory(),
         )
         obj = MailFactory(message=message, retry_count=4)
-        _mail_send([obj.pk])
+        _mail_select_and_send([obj.pk])
         obj.refresh_from_db()
         assert 5 == obj.retry_count
 

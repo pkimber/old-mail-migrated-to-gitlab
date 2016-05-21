@@ -3,7 +3,7 @@ import logging
 
 from django.conf import settings
 from django.core import mail
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.db.models import Q
 from django.template import (
     Context,
@@ -75,22 +75,19 @@ def _mail_process():
     primary_keys = []
     sent = []
     template_types = []
-    with transaction.atomic():
-        # only send once (if the function is called twice at the same time)
-        qs = Mail.objects.select_for_update(nowait=True).filter(
-            Q(sent__isnull=True)
-            &
-            (Q(retry_count__lte=10) | Q(retry_count__isnull=True))
-        ).order_by(
-            'pk'
-        )
-        for m in qs:
-            primary_keys.append(m.pk)
-            if m.message.template:
-                template_types.append(m.message.template.template_type)
-        _check_backends(set(template_types))
-        sent = _mail_send(primary_keys)
-    return sent
+    qs = Mail.objects.filter(
+        Q(sent__isnull=True)
+        &
+        (Q(retry_count__lte=10) | Q(retry_count__isnull=True))
+    ).order_by(
+        'pk'
+    )
+    for m in qs:
+        primary_keys.append(m.pk)
+        if m.message.template:
+            template_types.append(m.message.template.template_type)
+    _check_backends(set(template_types))
+    return _mail_select_and_send(primary_keys)
 
 
 def _render(text, context):
@@ -99,35 +96,48 @@ def _render(text, context):
     return t.render(c)
 
 
-def _mail_send(primary_keys):
-    sent = []
+def _mail_send(m):
+    """Send the 'Mail' message."""
+    result = None
+    try:
+        if m.message.template:
+            template_type = m.message.template.template_type
+        else:
+            template_type = None
+        if template_type == MailTemplate.DJANGO:
+            result = _send_mail_django_template(m)
+        elif template_type == MailTemplate.MANDRILL:
+            result = _send_mail_mandrill_template(m)
+        else:
+            result = _send_mail_simple(m)
+        m.sent = timezone.now()
+        if result:
+            m.sent_response_code = result
+    except (SMTPException, MailError, MailgunAPIError, MandrillAPIError) as e:
+        if hasattr(e, 'message'):
+            logger.error(e.message)
+        else:
+            logger.error(e)
+        retry_count = m.retry_count or 0
+        m.retry_count = retry_count + 1
+    m.save()
+    return result
+
+
+def _mail_select_and_send(primary_keys):
+    result = []
     for pk in primary_keys:
-        result = None
-        m = Mail.objects.get(pk=pk)
-        try:
-            if m.message.template:
-                template_type = m.message.template.template_type
-            else:
-                template_type = None
-            if template_type == MailTemplate.DJANGO:
-                result = _send_mail_django_template(m)
-            elif template_type == MailTemplate.MANDRILL:
-                result = _send_mail_mandrill_template(m)
-            else:
-                result = _send_mail_simple(m)
-            m.sent = timezone.now()
-            if result:
-                m.sent_response_code = result
-            sent.append(m.pk)
-        except (SMTPException, MailError, MailgunAPIError, MandrillAPIError) as e:
-            if hasattr(e, 'message'):
-                logger.error(e.message)
-            else:
-                logger.error(e)
-            retry_count = m.retry_count or 0
-            m.retry_count = retry_count + 1
-        m.save()
-    return sent
+        with transaction.atomic():
+            try:
+                # only send once (if function is called twice at the same time)
+                m = Mail.objects.select_for_update(nowait=True).get(pk=pk)
+                if not m.sent:
+                    if _mail_send(m):
+                        result.append(m.pk)
+            except DatabaseError:
+                # record is locked, so leave alone this time
+                pass
+    return result
 
 
 def _send_mail_simple(m):

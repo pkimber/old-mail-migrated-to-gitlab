@@ -17,9 +17,8 @@ Virtual Environment
 
 ::
 
-  virtualenv --python=python3.4 venv-mail
+  virtualenv --python=python3 venv-mail
   source venv-mail/bin/activate
-  pip install --upgrade pip
 
   pip install -r requirements/local.txt
 
