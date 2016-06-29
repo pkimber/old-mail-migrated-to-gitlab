@@ -20,17 +20,17 @@ def get_readme():
 
 setup(
     name='kb-mail',
-    packages=['mail', 'mail.migrations', 'mail.management', 'mail.management.commands', 'mail.tests'],
+    packages=['mail', 'mail.management', 'mail.management.commands', 'mail.tests', 'mail.migrations'],
     package_data={
         'mail': [
             'templates/*.*',
             'templates/mail/*.*',
         ],
     },
-    version='0.1.36',
+    version='0.1.37',
     description='mail',
-    author='Patrick Kimber',
-    author_email='code@pkimber.net',
+    author='Malcolm Dinsmore',
+    author_email='zebyea@gmail.com',
     url='git@github.com:pkimber/mail.git',
     classifiers=[
         'Development Status :: 1 - Planning',
