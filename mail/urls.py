@@ -1,8 +1,5 @@
 # -*- encoding: utf-8 -*-
-from django.conf.urls import (
-    patterns,
-    url,
-)
+from django.conf.urls import url
 
 from .views import (
     MailTemplateCreateDjangoView,
@@ -14,8 +11,7 @@ from .views import (
 )
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(regex=r'^$',
         view=MessageListView.as_view(),
         name='mail.message.list'
@@ -40,4 +36,4 @@ urlpatterns = patterns(
         view=MailTemplateUpdateMandrillView.as_view(),
         name='mail.template.update.mandrill'
         ),
-)
+]
