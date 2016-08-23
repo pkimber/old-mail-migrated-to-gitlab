@@ -1,12 +1,6 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.conf import settings
-from django.conf.urls import (
-    include,
-    patterns,
-    url,
-)
+from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -27,8 +21,7 @@ from .views import (
 
 admin.autodiscover()
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(regex=r'^$',
         view=HomeView.as_view(),
         name='project.home'
@@ -58,7 +51,7 @@ urlpatterns = patterns(
         view=SettingsView.as_view(),
         name='project.settings'
         ),
-)
+]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 #   ^ helper function to return a URL pattern for serving files in debug mode.
