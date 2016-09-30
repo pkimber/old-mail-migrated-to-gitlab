@@ -160,7 +160,7 @@ class MailField(models.Model):
 
     mail = models.ForeignKey(Mail)
     key = models.CharField(max_length=100)
-    value = models.CharField(max_length=256)
+    value = models.TextField()
 
     class Meta:
         ordering = ['mail', 'key']
