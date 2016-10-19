@@ -44,11 +44,16 @@ class EnquiryCreateView(
                     context,
                 )
             else:
+                attachments = []
+                file_name = self.object.document.file.name
+                if file_name:
+                    attachments.append(file_name)
                 queue_mail_message(
                     self.object,
                     [self.object.email],
                     self.object.subject,
-                    self.object.description
+                    self.object.description,
+                    attachments=attachments,
                 )
             process_mail.delay()
             return result

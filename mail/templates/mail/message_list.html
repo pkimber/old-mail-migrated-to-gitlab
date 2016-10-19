@@ -56,10 +56,19 @@
                   </a>
                 {% else %}
                   <strong>{{ e.subject }}</strong>
-                  <br />
+                  <br>
                   {% autoescape off %}
                     {{ e.description|urlize|linebreaksbr }}
                   {% endautoescape off %}
+                {% endif %}
+                {% if e.attachments.count %}
+                  <br>
+                  <strong>Attachments</strong>
+                  {% for attachment in e.attachments %}
+                    <br>
+                    {{ forloop.counter }}.
+                    {{ attachment.document.name }}
+                  {% endfor %}
                 {% endif %}
               </td>
             </tr>

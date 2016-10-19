@@ -129,6 +129,9 @@ class Message(TimeStampedModel):
     def is_mandrill(self):
         return self.template and self.template.is_mandrill
 
+    def attachments(self):
+        return self.attachment_set.all()
+
 reversion.register(Message)
 
 
