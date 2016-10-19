@@ -73,7 +73,6 @@ def _get_merge_vars(mail_item):
 
 def _mail_process():
     primary_keys = []
-    sent = []
     template_types = []
     qs = Mail.objects.filter(
         Q(sent__isnull=True)
