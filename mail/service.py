@@ -149,7 +149,7 @@ def _send_mail_simple(m):
             settings.DEFAULT_FROM_EMAIL,
             [m.email,],
         )
-        email.send_mail(fail_silently=False)
+        email.send(fail_silently=False)
         # mail.send_mail(
         #     m.message.subject,
         #     m.message.description,
