@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django import forms
 
 from .models import Enquiry
@@ -14,4 +12,5 @@ class EnquiryForm(forms.ModelForm):
             'email',
             'subject',
             'description',
+            'document',
         )

@@ -1,25 +1,13 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
+from braces.views import LoginRequiredMixin, StaffuserRequiredMixin
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.views.generic import (
-    CreateView,
-    ListView,
-    TemplateView,
-)
-
-from braces.views import (
-    LoginRequiredMixin,
-    StaffuserRequiredMixin,
-)
+from django.views.generic import CreateView, ListView, TemplateView
 
 from base.view_utils import BaseMixin
-
 from mail.models import Message
 from mail.service import queue_mail_template
 from mail.tasks import process_mail
-
 from .forms import EnquiryForm
 from .models import Enquiry
 
@@ -35,6 +23,7 @@ class EnquiryCreateView(
 
     form_class = EnquiryForm
     model = Enquiry
+    template_name = 'example/enquiry_form.html'
 
     def form_valid(self, form):
         with transaction.atomic():
@@ -62,6 +51,7 @@ class EnquiryListView(
         LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, ListView):
 
     model = Enquiry
+    template_name = 'example/enquiry_list.html'
 
 
 class SettingsView(
