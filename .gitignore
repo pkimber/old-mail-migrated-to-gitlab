@@ -39,6 +39,17 @@ venv-*
 .project
 .pydevproject
 
+# dev
+.cache
+logfile
+logfile.*
+media
+media-private
+restore.sh
+temp.db
+*~
+*.csv
+
 # private info
 .env.fish
 .private

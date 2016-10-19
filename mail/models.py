@@ -132,6 +132,25 @@ class Message(TimeStampedModel):
 reversion.register(Message)
 
 
+class Attachment(TimeStampedModel):
+    """email attachment.
+
+    Do not use ``reversion`` for this model.  We don't want it keeping track of
+    files.
+
+    """
+    message = models.ForeignKey(Message)
+    document = models.FileField()
+
+    class Meta:
+        ordering = ['-created']
+        verbose_name = 'Attachment'
+        verbose_name_plural = 'Attachments'
+
+    def __str__(self):
+        return '{}'.format(self.message.subject)
+
+
 class Mail(TimeStampedModel):
     """email messages to send."""
 

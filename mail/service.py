@@ -143,15 +143,22 @@ def _mail_select_and_send(primary_keys):
 def _send_mail_simple(m):
     """Send message to a single email address using the Django API."""
     if _can_use_mandrill():
-        mail.send_mail(
+        email = mail.EmailMessage(
             m.message.subject,
             m.message.description,
             settings.DEFAULT_FROM_EMAIL,
             [m.email,],
-            fail_silently=False,
-            auth_user=settings.MANDRILL_USER_NAME,
-            auth_password=settings.MANDRILL_API_KEY,
         )
+        email.send_mail(fail_silently=False)
+        # mail.send_mail(
+        #     m.message.subject,
+        #     m.message.description,
+        #     settings.DEFAULT_FROM_EMAIL,
+        #     [m.email,],
+        #     fail_silently=False,
+        #     auth_user=settings.MANDRILL_USER_NAME,
+        #     auth_password=settings.MANDRILL_API_KEY,
+        # )
     else:
         mail.send_mail(
             m.message.subject,
