@@ -129,7 +129,29 @@ class Message(TimeStampedModel):
     def is_mandrill(self):
         return self.template and self.template.is_mandrill
 
+    def attachments(self):
+        return self.attachment_set.all()
+
 reversion.register(Message)
+
+
+class Attachment(TimeStampedModel):
+    """email attachment.
+
+    Do not use ``reversion`` for this model.  We don't want it keeping track of
+    files.
+
+    """
+    message = models.ForeignKey(Message)
+    document = models.FileField(upload_to='mail/attachment/')
+
+    class Meta:
+        ordering = ['-created']
+        verbose_name = 'Attachment'
+        verbose_name_plural = 'Attachments'
+
+    def __str__(self):
+        return '{}'.format(self.message.subject)
 
 
 class Mail(TimeStampedModel):

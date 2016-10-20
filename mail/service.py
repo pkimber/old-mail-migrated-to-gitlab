@@ -1,14 +1,13 @@
 # -*- encoding: utf-8 -*-
 import logging
+import os
 
 from django.conf import settings
 from django.core import mail
+from django.core.files import File
 from django.db import DatabaseError, transaction
 from django.db.models import Q
-from django.template import (
-    Context,
-    Template,
-)
+from django.template import Context, Template
 from django.utils import timezone
 from django.utils.text import slugify
 
@@ -27,6 +26,7 @@ except ImportError:
 from smtplib import SMTPException
 
 from .models import (
+    Attachment,
     Mail,
     MailError,
     MailField,
@@ -73,7 +73,6 @@ def _get_merge_vars(mail_item):
 
 def _mail_process():
     primary_keys = []
-    sent = []
     template_types = []
     qs = Mail.objects.filter(
         Q(sent__isnull=True)
@@ -142,24 +141,15 @@ def _mail_select_and_send(primary_keys):
 
 def _send_mail_simple(m):
     """Send message to a single email address using the Django API."""
-    if _can_use_mandrill():
-        mail.send_mail(
-            m.message.subject,
-            m.message.description,
-            settings.DEFAULT_FROM_EMAIL,
-            [m.email,],
-            fail_silently=False,
-            auth_user=settings.MANDRILL_USER_NAME,
-            auth_password=settings.MANDRILL_API_KEY,
-        )
-    else:
-        mail.send_mail(
-            m.message.subject,
-            m.message.description,
-            settings.DEFAULT_FROM_EMAIL,
-            [m.email,],
-            fail_silently=False,
-        )
+    email = mail.EmailMessage(
+        m.message.subject,
+        m.message.description,
+        settings.DEFAULT_FROM_EMAIL,
+        [m.email,],
+    )
+    for attachment in m.message.attachments():
+        email.attach_file(attachment.document.file.name)
+    email.send(fail_silently=False)
 
 
 def _send_mail_django_template(m):
@@ -178,7 +168,7 @@ def _send_mail_django_template(m):
         msg.auto_text = True
     else:
         msg.body = description
-    msg.send()
+        msg.send()
 
 
 def _send_mail_mandrill_template(m):
@@ -276,13 +266,17 @@ def _mail_template_render(template_slug, context):
 
 
 @transaction.atomic
-def queue_mail_message(content_object, email_addresses, subject, description, is_html=False):
+def queue_mail_message(
+        content_object, email_addresses, subject, description,
+        is_html=False, attachments=None):
     """queue a mail message for one or more email addresses.
 
     The subject and description are fully formed i.e. this function does not
     do any templating.
 
     """
+    if not attachments:
+        attachments = []
     if not email_addresses:
         raise MailError(
             "Cannot 'queue_mail_message' without "
@@ -301,6 +295,12 @@ def queue_mail_message(content_object, email_addresses, subject, description, is
             message=message,
         ))
         mail.save()
+    for file_name in attachments:
+        attachment = Attachment(message=message)
+        with open(file_name, 'rb') as f:
+            django_file = File(f)
+            base_name = os.path.basename(file_name)
+            attachment.document.save(base_name, django_file, save=True)
     return message
 
 

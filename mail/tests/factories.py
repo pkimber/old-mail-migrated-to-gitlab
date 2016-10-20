@@ -2,6 +2,7 @@
 import factory
 
 from mail.models import (
+    Attachment,
     Mail,
     MailTemplate,
     Message,
@@ -41,6 +42,15 @@ class MessageFactory(factory.django.DjangoModelFactory):
         model = Message
 
     template = factory.SubFactory(MailTemplateFactory)
+
+
+class AttachmentFactory(factory.django.DjangoModelFactory):
+
+    class Meta:
+        model = Attachment
+
+    message = factory.SubFactory(MessageFactory)
+    document = factory.django.FileField()
 
 
 class NotifyFactory(factory.django.DjangoModelFactory):

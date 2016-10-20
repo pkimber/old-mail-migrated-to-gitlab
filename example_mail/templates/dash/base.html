@@ -1,4 +1,4 @@
-{% extends "base/base.html" %}
+{% extends 'base/base.html' %}
 {% load staticfiles %}
 
 {% block title %}
@@ -16,7 +16,7 @@
 {% block menu %}
   {% if user.is_staff %}
     <li>
-      <a href="{% url 'project.settings' %}">
+      <a href="{% url 'project.settings' %}" class="pure-menu-link">
         <i class="fa fa-cog"></i>
         Settings
       </a>
