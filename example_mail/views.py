@@ -45,9 +45,8 @@ class EnquiryCreateView(
                 )
             else:
                 attachments = []
-                file_name = self.object.document.file.name
-                if file_name:
-                    attachments.append(file_name)
+                if self.object.document:
+                    attachments.append(self.object.document.file.name)
                 queue_mail_message(
                     self.object,
                     [self.object.email],
