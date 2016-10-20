@@ -143,7 +143,7 @@ class Attachment(TimeStampedModel):
 
     """
     message = models.ForeignKey(Message)
-    document = models.FileField()
+    document = models.FileField(upload_to='mail/attachment/')
 
     class Meta:
         ordering = ['-created']

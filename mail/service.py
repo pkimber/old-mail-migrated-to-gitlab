@@ -141,24 +141,15 @@ def _mail_select_and_send(primary_keys):
 
 def _send_mail_simple(m):
     """Send message to a single email address using the Django API."""
-    if _can_use_mandrill():
-        email = mail.EmailMessage(
-            m.message.subject,
-            m.message.description,
-            settings.DEFAULT_FROM_EMAIL,
-            [m.email,],
-        )
-        for attachment in m.message.attachments():
-            email.attach_file(attachment.document.file.name)
-        email.send(fail_silently=False)
-    else:
-        mail.send_mail(
-            m.message.subject,
-            m.message.description,
-            settings.DEFAULT_FROM_EMAIL,
-            [m.email,],
-            fail_silently=False,
-        )
+    email = mail.EmailMessage(
+        m.message.subject,
+        m.message.description,
+        settings.DEFAULT_FROM_EMAIL,
+        [m.email,],
+    )
+    for attachment in m.message.attachments():
+        email.attach_file(attachment.document.file.name)
+    email.send(fail_silently=False)
 
 
 def _send_mail_django_template(m):
