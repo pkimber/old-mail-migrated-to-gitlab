@@ -15,8 +15,8 @@
 
 {% block menu %}
   {% if user.is_staff %}
-    <li>
-      <a href="{% url 'project.settings' %}">
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="{% url 'project.settings' %}">
         <i class="fa fa-cog"></i>
         Settings
       </a>
