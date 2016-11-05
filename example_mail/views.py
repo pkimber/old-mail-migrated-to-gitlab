@@ -54,7 +54,7 @@ class EnquiryCreateView(
                     self.object.description,
                     attachments=attachments,
                 )
-            process_mail.delay()
+            transaction.on_commit(lambda: process_mail.delay())
             return result
 
     def get_success_url(self):
