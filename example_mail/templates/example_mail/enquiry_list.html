@@ -11,15 +11,11 @@
 {% block content %}
   <div class="pure-g">
     <div class="pure-u-1">
-      <div class="pure-menu pure-menu-open pure-menu-horizontal">
-        <ul>
-          <li>
-            <a href="{% url 'project.settings' %}">
-              <i class="fa fa-reply"></i>
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'example.enquiry.create' %}">
+      <div class="pure-menu pure-menu-horizontal">
+        <ul class="pure-menu-list">
+          {% include 'base/_back_to_settings.html' %}
+          <li class="pure-menu-item">
+            <a href="{% url 'example.enquiry.create' %}" class="pure-menu-link">
               <i class="fa fa-comments-o"></i>
               Create Enquiry
             </a>
@@ -30,34 +26,32 @@
   </div>
   <div class="pure-g">
     <div class="pure-u-1">
-      <div class="l-box">
-        <table class="pure-table pure-table-bordered">
-          <thead>
-            <tr>
-              <th>Created</th>
-              <th>Email address</th>
-              <th>Message</th>
+      <table class="pure-table pure-table-bordered">
+        <thead>
+          <tr>
+            <th>Created</th>
+            <th>Email address</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in object_list %}
+            <tr valign="top">
+              <td>
+                {{ e.created|date:'D jS M Y, H:i' }}
+              </td>
+              <td>
+                {{ e.email }}
+              </td>
+              <td>
+                <strong>{{ e.subject }}</strong>
+                <br />
+                {{ e.description|urlize|linebreaksbr }}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {% for e in object_list %}
-              <tr valign="top">
-                <td>
-                  {{ e.created|date:'D jS M Y, H:i' }}
-                </td>
-                <td>
-                  {{ e.email }}
-                </td>
-                <td>
-                  <strong>{{ e.subject }}</strong>
-                  <br />
-                  {{ e.description|urlize|linebreaksbr }}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 {% endblock content %}

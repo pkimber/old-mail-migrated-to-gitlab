@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import models
 
 from base.model_utils import TimeStampedModel
@@ -11,6 +9,7 @@ class Enquiry(TimeStampedModel):
     email = models.EmailField()
     subject = models.CharField(max_length=100)
     description = models.TextField()
+    document = models.FileField(blank=True, null=True)
 
     class Meta:
         ordering = ['-created']

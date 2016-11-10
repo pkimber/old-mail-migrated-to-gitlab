@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+import filecmp
+import os
 import pytest
 
 from unittest import mock
@@ -29,7 +31,9 @@ def _mail(enquiry):
     return message.mail_set.all()[0]
 
 
-def _queue_enquiry():
+def _queue_enquiry(attachments=None):
+    if not attachments:
+        attachments = []
     email_address = get_env_variable('TEST_EMAIL_ADDRESS_1')
     enquiry = make_enquiry(
         email_address,
@@ -41,6 +45,7 @@ def _queue_enquiry():
         [enquiry.email,],
         enquiry.subject,
         enquiry.description,
+        attachments=attachments,
     )
     return enquiry
 
@@ -93,6 +98,27 @@ def test_queue_mail():
     mail = Mail.objects.get(email=email_address)
     assert message == mail.message
     assert enquiry == message.content_object
+
+
+@pytest.mark.django_db
+def test_queue_mail_with_attachment():
+    file_name = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'data',
+        'sample.odt',
+    )
+    enquiry = _queue_enquiry([file_name])
+    message = Message.objects.get(subject='Farming')
+    email_address = get_env_variable('TEST_EMAIL_ADDRESS_1')
+    mail = Mail.objects.get(email=email_address)
+    assert message == mail.message
+    assert enquiry == message.content_object
+    assert 1 == message.attachments().count()
+    assert filecmp.cmp(
+        file_name,
+        message.attachments().first().document.file.name,
+        shallow=False
+    ) is True
 
 
 @pytest.mark.django_db

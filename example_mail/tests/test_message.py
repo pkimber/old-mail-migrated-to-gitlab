@@ -1,36 +1,36 @@
 # -*- encoding: utf-8 -*-
-from django.test import TestCase
+import pytest
 
-from .factories import EnquiryFactory
 from mail.models import MailTemplate
-from mail.tests.factories import (
-    MailTemplateFactory,
-    MessageFactory,
-)
+from mail.tests.factories import MailTemplateFactory, MessageFactory
+from .factories import EnquiryFactory
 
 
-class TestMessage(TestCase):
+@pytest.mark.django_db
+def test_is_mandrill():
+    mandrill_template = MailTemplateFactory(
+        template_type=MailTemplate.MANDRILL
+    )
+    message = MessageFactory(
+        content_object=EnquiryFactory(),
+        template=mandrill_template,
+    )
+    assert message.is_mandrill is True
 
-    def test_is_mandrill(self):
-        mandrill_template = MailTemplateFactory(
-            template_type=MailTemplate.MANDRILL
-        )
-        message = MessageFactory(
-            content_object=EnquiryFactory(),
-            template=mandrill_template,
-        )
-        self.assertTrue(message.is_mandrill)
 
-    def test_is_not_mandrill(self):
-        django_template = MailTemplateFactory(
-            template_type=MailTemplate.DJANGO
-        )
-        message = MessageFactory(
-            content_object=EnquiryFactory(),
-            template=django_template,
-        )
-        self.assertFalse(message.is_mandrill)
+@pytest.mark.django_db
+def test_is_not_mandrill():
+    django_template = MailTemplateFactory(
+        template_type=MailTemplate.DJANGO
+    )
+    message = MessageFactory(
+        content_object=EnquiryFactory(),
+        template=django_template,
+    )
+    assert message.is_mandrill is False
 
-    def test_is_not_template(self):
-        message = MessageFactory(content_object=EnquiryFactory())
-        self.assertFalse(message.is_mandrill)
+
+@pytest.mark.django_db
+def test_is_not_template():
+    message = MessageFactory(content_object=EnquiryFactory())
+    assert message.is_mandrill is False
