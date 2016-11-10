@@ -11,7 +11,12 @@
 {% block content %}
   <div class="pure-g">
     <div class="pure-u-1">
+      {% include 'mail/_access_remote_template.html' with template_type=object.template_type %}
+
+
+      {% comment %}
       <p>
+        {% if object.template_type == 'mandrill' %}
         <strong>Note:</strong> This is a Mandrill template.  The Slug is used
         to lookup the template name on the
         <a
@@ -22,7 +27,20 @@
         </a>
         .   Please make sure the Slug matches the template name on the Mandrill
         web site or the email will not send.
+        {% elif object.template_type == 'sparkpost' %}
+        <strong>Note:</strong> This is a Sparkpost template.  The Slug is used
+        to lookup the template name on the
+        <a
+          target="_blank"
+          href="https://app.sparkpost.com/templates/edit/{{ object.slug }}">
+          Sparkpost web site
+          <i class="fa fa-external-link"></i>
+        </a>
+        .   Please make sure the Slug matches the template name on the Mandrill
+        web site or the email will not send.
+        {% endif %}
       </p>
+      {% endcomment %}
       {% if object.help_text %}
         {{ object.help_text|linebreaksbr }}
       {% endif %}

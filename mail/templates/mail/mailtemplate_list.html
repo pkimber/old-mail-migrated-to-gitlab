@@ -24,12 +24,22 @@
               Create Django Template
             </a>
           </li>
+          {% if template_type == 'mandrill' %}
           <li class="pure-menu-item">
             <a href="{% url 'mail.template.create.mandrill' %}" class="pure-menu-link">
               <i class="fa fa-envelope"></i>
               Create Mandrill Template
             </a>
           </li>
+          {% endif %}
+          {% if template_type == 'sparkpost' %}
+          <li class="pure-menu-item">
+            <a href="{% url 'mail.template.create.sparkpost' %}" class="pure-menu-link">
+              <i class="fa fa-envelope"></i>
+              Create SparkPost Template
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </div>
@@ -51,6 +61,8 @@
                 {% if not e.is_system %}
                   {% if e.is_mandrill %}
                     <a href="{% url 'mail.template.update.mandrill' e.pk %}">
+                  {% elif e.is_sparkpost %}
+                    <a href="{% url 'mail.template.update.sparkpost' e.pk %}">
                   {% else %}
                     <a href="{% url 'mail.template.update.django' e.pk %}">
                   {% endif %}
@@ -69,6 +81,20 @@
                     target="_blank"
                     href="https://mandrillapp.com/templates/">
                     Mandrill template
+                    <small>({{ e.slug }})</small>
+                    <i class="fa fa-external-link"></i>
+                  </a>
+                  {% if e.help_text %}
+                    <br />
+                    <small>
+                    {{ e.help_text|linebreaksbr }}
+                    </small>
+                  {% endif %}
+                {% elif e.is_sparkpost %}
+                  <a
+                    target="_blank"
+                    href="https://app.sparkpost.com/templates/edit/{{ e.slug }}">
+                    Sparkpost template
                     <small>({{ e.slug }})</small>
                     <i class="fa fa-external-link"></i>
                   </a>

@@ -38,7 +38,7 @@ def _queue_enquiry():
     )
     queue_mail_message(
         enquiry,
-        [enquiry.email,],
+        [enquiry.email, ],
         enquiry.subject,
         enquiry.description,
     )
@@ -66,7 +66,7 @@ def _create_welcome_template():
     return welcome_template
 
 
-def _create_goodbye_template():
+def _create_goodbye_mandrill_template():
     goodbye_template = MailTemplate.objects.init_mail_template(
         'goodbye',
         'Goodbye...',
@@ -80,6 +80,25 @@ def _create_goodbye_template():
         "Sorry you are leaving the *|title|* group\n\n"
         "You had a question *|question|* sorry we've not answered it yet\n\n"
         "The *|title|* team\n"
+    )
+    goodbye_template.save()
+    return goodbye_template
+
+
+def _create_goodbye_sparkpost_template():
+    goodbye_template = MailTemplate.objects.init_mail_template(
+        'goodbye-sparkpost',
+        'Goodbye...',
+        'Available variables {{name}} {{title}} and {{question}}',
+        True,
+        MailTemplate.SPARKPOST,
+    )
+    goodbye_template.subject = "Goodbye {{name}}"
+    goodbye_template.description = (
+        "Goodbye {{name}}\n\n"
+        "Sorry you are leaving the {{title}} group\n\n"
+        "You had a question {{question}} sorry we've not answered it yet\n\n"
+        "The {{title}} team\n"
     )
     goodbye_template.save()
     return goodbye_template
@@ -136,7 +155,7 @@ def test_queue_mail_message_and_send_via_mandrill(settings):
             "Welcome",
             'Can I join your club?',
         )
-        template = _create_goodbye_template()
+        template = _create_goodbye_mandrill_template()
         content_data = {
             email_address: {
                 "name": "Fred",
@@ -172,7 +191,8 @@ def test_queue_no_email():
             enquiry.subject,
             enquiry.description,
         )
-    assert "Cannot 'queue_mail_message' without 'email_addresses'" in str(e.value)
+    expect = "Cannot 'queue_mail_message' without 'email_addresses'"
+    assert expect in str(e.value)
 
 
 @pytest.mark.django_db

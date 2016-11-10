@@ -3,6 +3,7 @@ import logging
 
 from django.conf import settings
 from django.core import mail
+from django.core.exceptions import ImproperlyConfigured
 from django.db import DatabaseError, transaction
 from django.db.models import Q
 from django.template import (
@@ -23,6 +24,17 @@ try:
 except ImportError:
     class MandrillAPIError(Exception):
         pass
+try:
+    from sparkpost import SparkPostAPIException
+except ImportError:
+    class SparkPostAPIException(Exception):
+        pass
+
+try:
+    from sparkpost import SparkPost
+    sparkpost_available = True
+except ImportError:
+    sparkpost_available = False
 
 from smtplib import SMTPException
 
@@ -33,7 +45,6 @@ from .models import (
     MailTemplate,
     Message,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +63,18 @@ def _can_use_mandrill():
     return result
 
 
+def _can_use_sparkpost():
+    api_key = None
+    result = False
+    if 'SparkPostEmailBackend' in settings.EMAIL_BACKEND:
+        try:
+            api_key = settings.SPARKPOST_API_KEY
+            result = api_key
+        except AttributeError:
+            pass
+    return result
+
+
 def _check_backends(template_types):
     """Check the backend settings... so we can abort early."""
     if not settings.DEFAULT_FROM_EMAIL:
@@ -60,24 +83,26 @@ def _check_backends(template_types):
         if t == MailTemplate.DJANGO:
             if _can_use_mandrill():
                 _using_mandrill()
+            elif _can_use_sparkpost():
+                _using_sparkpost()
             else:
                 _using_mailgun()
         elif t == MailTemplate.MANDRILL:
             _using_mandrill()
+        elif t == MailTemplate.SPARKPOST:
+            _using_sparkpost()
 
 
 def _get_merge_vars(mail_item):
-    result = [ (mf.key, mf.value) for mf in mail_item.mailfield_set.all()]
+    result = [(mf.key, mf.value) for mf in mail_item.mailfield_set.all()]
     return dict(result)
 
 
 def _mail_process():
     primary_keys = []
-    sent = []
     template_types = []
     qs = Mail.objects.filter(
-        Q(sent__isnull=True)
-        &
+        Q(sent__isnull=True) &
         (Q(retry_count__lte=10) | Q(retry_count__isnull=True))
     ).order_by(
         'pk'
@@ -108,12 +133,17 @@ def _mail_send(m):
             result = _send_mail_django_template(m)
         elif template_type == MailTemplate.MANDRILL:
             result = _send_mail_mandrill_template(m)
+        elif template_type == MailTemplate.SPARKPOST:
+            result = _send_mail_sparkpost_template(m)
         else:
             result = _send_mail_simple(m)
         m.sent = timezone.now()
         if result:
             m.sent_response_code = result
-    except (SMTPException, MailError, MailgunAPIError, MandrillAPIError) as e:
+    except (
+        SMTPException, MailError, MailgunAPIError, MandrillAPIError,
+        SparkPostAPIException
+    ) as e:
         if hasattr(e, 'message'):
             logger.error(e.message)
         else:
@@ -147,17 +177,26 @@ def _send_mail_simple(m):
             m.message.subject,
             m.message.description,
             settings.DEFAULT_FROM_EMAIL,
-            [m.email,],
+            [m.email, ],
             fail_silently=False,
             auth_user=settings.MANDRILL_USER_NAME,
             auth_password=settings.MANDRILL_API_KEY,
+        )
+    elif _can_use_sparkpost():
+        mail.send_mail(
+            m.message.subject,
+            m.message.description,
+            settings.DEFAULT_FROM_EMAIL,
+            [m.email, ],
+            fail_silently=False,
+            auth_password=settings.SPARKPOST_API_KEY,
         )
     else:
         mail.send_mail(
             m.message.subject,
             m.message.description,
             settings.DEFAULT_FROM_EMAIL,
-            [m.email,],
+            [m.email, ],
             fail_silently=False,
         )
 
@@ -184,7 +223,7 @@ def _send_mail_django_template(m):
 def _send_mail_mandrill_template(m):
     """Send message to a single email address."""
     result = None
-    email_addresses = [m.email,]
+    email_addresses = [m.email, ]
     msg = mail.EmailMultiAlternatives(
         subject=m.message.subject,
         from_email=settings.DEFAULT_FROM_EMAIL,
@@ -201,7 +240,7 @@ def _send_mail_mandrill_template(m):
     merge_vars = dict()
     user_vars = _get_merge_vars(m)
     if len(user_vars):
-        merge_vars.update ({m.email: user_vars})
+        merge_vars.update({m.email: user_vars})
     if len(merge_vars):
         msg.merge_vars = merge_vars
     msg.template_name = m.message.template.slug
@@ -229,10 +268,81 @@ def _send_mail_mandrill_template(m):
                 email = resp['email']
             if 'reject_reason' in resp:
                 reason = resp['reject_reason']
-            raise MailError("Failed to send mail '{}' to '{}' [{}] [{}] [{}]".format(
-                m.pk, m.email, status, email, reason
-            ))
+            raise MailError(
+                "Failed to send mail '{}' to '{}' [{}] [{}] [{}]".format(
+                    m.pk, m.email, status, email, reason
+                )
+            )
     return result
+
+
+def _send_mail_sparkpost_template(m):
+    """
+        Send message to a single email address.
+
+        Sparkpost email backend does not currently return the transactio id
+        so using SparkPost API direct
+    """
+
+    if not sparkpost_available:
+        raise ImproperlyConfigured(
+            "Unable to import the Sparkpost client so unable to send mail"
+            " using sparkpost")
+
+    email_addresses = [m.email, ]
+
+    try:
+        # Allow track_opens to be set to on per project basis
+        track_opens = settings.SPARKPOST_OPTIONS.get("track_opens", True)
+    except AttributeError:
+        track_opens = True
+    try:
+        # Allow track_clicks to be set to on per project basis
+        track_clicks = settings.SPARKPOST_OPTIONS.get("track_clicks", False)
+    except AttributeError:
+        track_clicks = False
+
+    print ("clicks = {} opens = {}".format(track_clicks, track_opens))
+    try:
+        sp = SparkPost()
+        user_vars = _get_merge_vars(m)
+        resp = sp.transmissions.send(
+            recipients=email_addresses,
+            template=m.message.template.slug,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            subject=m.message.subject,
+            track_opens=track_opens,
+            track_clicks=track_clicks,
+            substitution_data=user_vars
+        )
+
+        # sending one email, so expecting e.g:
+        # {
+        #     'total_rejected_recipients': 0,
+        #     'total_accepted_recipients': 1,
+        #      'id': '84456312809058094'
+        # }
+
+        accepted = resp.get('total_accepted_recipients', None)
+        rejected = resp.get('total_rejected_recipients', None)
+        id = resp.get('id', None)
+    except SparkPostAPIException as spe:
+        MailError(
+            "Failed to send mail ({}) '{}' to '{}' SparkpostAPIException {}"
+            .format(
+                m.pk, m.message.subject, m.email, spe
+            )
+        )
+
+    # return id or raise exception
+    if accepted == len(email_addresses) and rejected == 0:
+        return id
+    raise MailError(
+        "Failed to send mail ({}) '{}' to '{}' Accepted: {} Rejected: {}"
+        " id: {}".format(
+            m.pk, m.message.subject, m.email, accepted, rejected, id
+        )
+    )
 
 
 def _using_mailgun():
@@ -243,7 +353,7 @@ def _using_mailgun():
 
 def _using_mandrill():
     """We are using mandrill... so check settings."""
-    if not 'DjrillBackend' in settings.EMAIL_BACKEND:
+    if 'DjrillBackend' not in settings.EMAIL_BACKEND:
         raise MailError(
             "The email backend is not 'DjrillBackend'.  You cannot send "
             "messages using Mandrill (or send Mandrill templates)."
@@ -251,6 +361,19 @@ def _using_mandrill():
     if not _can_use_mandrill():
         raise MailError(
             "The Mandrill user name and/or API key are not configured"
+        )
+
+
+def _using_sparkpost():
+    """We are using sparkpost... so check settings."""
+    if 'SparkPostEmailBackend' not in settings.EMAIL_BACKEND:
+        raise MailError(
+            "The email backend is not 'SparkPostEmailBackend'.  You cannot "
+            "send messages using Sparkpost (or send Sparkpost templates)."
+        )
+    if not _can_use_sparkpost():
+        raise MailError(
+            "The Sparkpost API key is not configured"
         )
 
 
@@ -276,7 +399,8 @@ def _mail_template_render(template_slug, context):
 
 
 @transaction.atomic
-def queue_mail_message(content_object, email_addresses, subject, description, is_html=False):
+def queue_mail_message(
+        content_object, email_addresses, subject, description, is_html=False):
     """queue a mail message for one or more email addresses.
 
     The subject and description are fully formed i.e. this function does not
@@ -309,7 +433,7 @@ def queue_mail_template(content_object, template_slug, context):
     """Queue a mail message.  The message will be rendered using the template.
 
     When the mail is sent, the template will be found and rendered using
-    Django or Mandrill.
+    Django, Mandrill or Sparkpost.
 
     The context is a dict containing email addresses and optionally a
     key, value dict for each email address.

@@ -219,3 +219,5 @@ DEFAULT_FROM_EMAIL = 'web@pkimber.net'
 MAIL_TEMPLATE_TYPE = 'mandrill'
 MANDRILL_API_KEY = get_env_variable("MANDRILL_API_KEY")
 MANDRILL_USER_NAME = get_env_variable("MANDRILL_USER_NAME")
+
+SPARKPOST_API_KEY = get_env_variable("SPARKPOST_API_KEY")

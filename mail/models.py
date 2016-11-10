@@ -72,6 +72,7 @@ class MailTemplate(TimeStampedModel):
 
     DJANGO = 'django'
     MANDRILL = 'mandrill'
+    SPARKPOST = 'sparkpost'
 
     slug = models.SlugField(unique=True)
     title = models.CharField(max_length=100)
@@ -91,6 +92,10 @@ class MailTemplate(TimeStampedModel):
     @property
     def is_mandrill(self):
         return self.template_type == self.MANDRILL
+
+    @property
+    def is_sparkpost(self):
+        return self.template_type == self.SPARKPOST
 
     def __str__(self):
         return '{}'.format(self.title)
@@ -129,6 +134,10 @@ class Message(TimeStampedModel):
     def is_mandrill(self):
         return self.template and self.template.is_mandrill
 
+    @property
+    def is_sparkpost(self):
+        return self.template and self.template.is_sparkpost
+
 reversion.register(Message)
 
 
@@ -139,7 +148,9 @@ class Mail(TimeStampedModel):
     email = models.EmailField()
     retry_count = models.IntegerField(blank=True, null=True)
     sent = models.DateTimeField(blank=True, null=True)
-    sent_response_code = models.CharField(max_length=256, blank=True, null=True)
+    sent_response_code = models.CharField(
+        max_length=256, blank=True, null=True
+    )
 
     class Meta:
         ordering = ['created']

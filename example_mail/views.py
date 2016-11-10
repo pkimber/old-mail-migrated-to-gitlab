@@ -27,7 +27,7 @@ from .models import Enquiry
 class HomeView(ListView):
 
     model = Message
-    template_name = 'example/home.html'
+    template_name = 'example_mail/home.html'
 
 
 class EnquiryCreateView(
@@ -68,4 +68,4 @@ class SettingsView(
         LoginRequiredMixin, StaffuserRequiredMixin, BaseMixin, TemplateView):
 
     model = Message
-    template_name = 'example/settings.html'
+    template_name = 'example_mail/settings.html'
