@@ -23,7 +23,7 @@ class MailTemplateCreateDjangoForm(RequiredFieldForm):
         )
 
 
-class MailTemplateCreateMandrillForm(RequiredFieldForm):
+class MailTemplateCreateRemoteForm(RequiredFieldForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,7 +59,7 @@ class MailTemplateUpdateDjangoForm(RequiredFieldForm):
         )
 
 
-class MailTemplateUpdateMandrillForm(RequiredFieldForm):
+class MailTemplateUpdateRemoteForm(RequiredFieldForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

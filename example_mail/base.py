@@ -216,6 +216,8 @@ SENDFILE_ROOT = 'media-private'
 
 DEFAULT_FROM_EMAIL = 'web@pkimber.net'
 # See the list of constants at the top of 'mail.models'
-MAIL_TEMPLATE_TYPE = 'mandrill'
+MAIL_TEMPLATE_TYPE = get_env_variable("MAIL_TEMPLATE_TYPE")
 MANDRILL_API_KEY = get_env_variable("MANDRILL_API_KEY")
 MANDRILL_USER_NAME = get_env_variable("MANDRILL_USER_NAME")
+
+SPARKPOST_API_KEY = get_env_variable("SPARKPOST_API_KEY")

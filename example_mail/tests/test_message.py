@@ -31,6 +31,31 @@ def test_is_not_mandrill():
 
 
 @pytest.mark.django_db
+def test_is_sparkpost():
+    mandrill_template = MailTemplateFactory(
+        template_type=MailTemplate.SPARKPOST
+    )
+    message = MessageFactory(
+        content_object=EnquiryFactory(),
+        template=mandrill_template,
+    )
+    assert message.is_sparkpost
+
+
+@pytest.mark.django_db
+def test_is_not_sparkpost():
+    django_template = MailTemplateFactory(
+        template_type=MailTemplate.DJANGO
+    )
+    message = MessageFactory(
+        content_object=EnquiryFactory(),
+        template=django_template,
+    )
+    assert message.is_sparkpost is False
+
+
+@pytest.mark.django_db
 def test_is_not_template():
     message = MessageFactory(content_object=EnquiryFactory())
     assert message.is_mandrill is False
+    assert message.is_sparkpost is False

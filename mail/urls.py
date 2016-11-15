@@ -3,10 +3,10 @@ from django.conf.urls import url
 
 from .views import (
     MailTemplateCreateDjangoView,
-    MailTemplateCreateMandrillView,
+    MailTemplateCreateRemoteView,
     MailTemplateListView,
     MailTemplateUpdateDjangoView,
-    MailTemplateUpdateMandrillView,
+    MailTemplateUpdateRemoteView,
     MessageListView,
 )
 
@@ -25,15 +25,23 @@ urlpatterns = [
         name='mail.template.create.django'
         ),
     url(regex=r'^template/create/mandrill/$',
-        view=MailTemplateCreateMandrillView.as_view(),
+        view=MailTemplateCreateRemoteView.as_view(),
         name='mail.template.create.mandrill'
+        ),
+    url(regex=r'^template/create/sparkpost/$',
+        view=MailTemplateCreateRemoteView.as_view(),
+        name='mail.template.create.sparkpost'
         ),
     url(regex=r'^template/(?P<pk>\d+)/update/django/$',
         view=MailTemplateUpdateDjangoView.as_view(),
         name='mail.template.update.django'
         ),
     url(regex=r'^template/(?P<pk>\d+)/update/mandrill/$',
-        view=MailTemplateUpdateMandrillView.as_view(),
+        view=MailTemplateUpdateRemoteView.as_view(),
         name='mail.template.update.mandrill'
+        ),
+    url(regex=r'^template/(?P<pk>\d+)/update/sparkpost/$',
+        view=MailTemplateUpdateRemoteView.as_view(),
+        name='mail.template.update.sparkpost'
         ),
 ]

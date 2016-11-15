@@ -26,6 +26,9 @@ class TestViewPerm(PermTestCase):
     def test_template_create_mandrill(self):
         self.assert_staff_only(reverse('mail.template.create.mandrill'))
 
+    def test_template_create_sparkpost(self):
+        self.assert_staff_only(reverse('mail.template.create.sparkpost'))
+
     def test_template_update_django(self):
         t = MailTemplate.objects.init_mail_template(
             'hello', 'Welcome...', '', False, MailTemplate.DJANGO
@@ -38,4 +41,11 @@ class TestViewPerm(PermTestCase):
             'hello', 'Welcome...', '', False, MailTemplate.MANDRILL
         )
         url = reverse('mail.template.update.mandrill', kwargs=dict(pk=t.pk))
+        self.assert_staff_only(url)
+
+    def test_template_update_sparkpost(self):
+        t = MailTemplate.objects.init_mail_template(
+            'hello', 'Welcome...', '', False, MailTemplate.SPARKPOST
+        )
+        url = reverse('mail.template.update.sparkpost', kwargs=dict(pk=t.pk))
         self.assert_staff_only(url)

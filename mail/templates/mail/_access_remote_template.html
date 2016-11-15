@@ -1,0 +1,29 @@
+<p>
+  {% if template_type == 'mandrill' %}
+    <strong>Note:</strong> This is a Mandrill template.  The Slug is used
+    to lookup the template name on the
+    <a
+      target="_blank"
+      href="https://mandrillapp.com/templates/">
+      Mandrill web site
+      <i class="fa fa-external-link"></i>
+    </a>
+    .   Please make sure the Slug matches the template name on the Mandrill
+    web site or the email will not send.
+  {% elif template_type == 'sparkpost' %}
+    <strong>Note:</strong> This is a Sparkpost template.  The Slug is used
+    to lookup the template name on the
+    <a
+      target="_blank"
+      {% if object %}
+        href="https://app.sparkpost.com/templates/edit/{{ object.slug }}"
+      {% else %}
+        href="https://app.sparkpost.com/templates/edit/{{ object.slug }}"
+      {% endif %}
+      >Sparkpost web site
+      <i class="fa fa-external-link"></i>
+    </a>
+    .   Please make sure the Slug matches the template name on the Sparkpost
+    web site or the email will not send.
+  {% endif %}
+</p>
