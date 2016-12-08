@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 from django import forms
 
+from base.form_utils import FileDropInput
 from .models import Enquiry
 
 
@@ -13,6 +14,14 @@ class EnquiryForm(forms.ModelForm):
 
     send_email = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in self.fields:
+            if name != 'send_email':
+                self.fields[name].widget.attrs.update(
+                    {'class': 'pure-input-2-3'}
+                )
+
     class Meta:
         model = Enquiry
         fields = (
@@ -22,3 +31,4 @@ class EnquiryForm(forms.ModelForm):
             'description',
             'document',
         )
+        widgets= {'document': FileDropInput}

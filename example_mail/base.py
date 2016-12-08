@@ -141,7 +141,6 @@ DJANGO_APPS = (
 )
 
 THIRD_PARTY_APPS = (
-    'compressor',
     'reversion',
     'djrill',
 )
@@ -195,10 +194,7 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 # https://kfalck.net/2013/02/21/run-multiple-celeries-on-a-single-redis
 CELERY_DEFAULT_QUEUE = 'mail'
 
-# django-compressor
-COMPRESS_ENABLED = False # defaults to the opposite of DEBUG
-
-EMAIL_BACKEND = "djrill.mail.backends.djrill.DjrillBackend"
+EMAIL_BACKEND = "sparkpost.django.email_backend.SparkPostEmailBackend"
 
 FTP_STATIC_DIR = None
 FTP_STATIC_URL = None
