@@ -27,7 +27,7 @@ setup(
             'templates/mail/*.*',
         ],
     },
-    version='0.1.43',
+    version='0.1.44',
     description='mail',
     author='Malcolm Dinsmore',
     author_email='zebyea@gmail.com',
