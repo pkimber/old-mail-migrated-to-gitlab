@@ -51,5 +51,4 @@ temp.db
 *.csv
 
 # private info
-.env.fish
 .private
