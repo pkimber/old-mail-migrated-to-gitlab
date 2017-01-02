@@ -19,7 +19,7 @@ except ImportError:
         pass
 
 try:
-    from djrill import MandrillAPIError
+    from djrill import MandrillAPIError, MandrillRecipientsRefused
 except ImportError:
     class MandrillAPIError(Exception):
         pass
@@ -141,7 +141,8 @@ def _mail_send(m):
         if result:
             m.sent_response_code = result
     except (
-        SMTPException, MailError, MailgunAPIError, MandrillAPIError,
+        SMTPException, MailError, MailgunAPIError,
+        MandrillAPIError, MandrillRecipientsRefused,
         SparkPostAPIException
     ) as e:
         if hasattr(e, 'message'):
