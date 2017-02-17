@@ -1,8 +1,9 @@
 # -*- encoding: utf-8 -*-
+import json
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-
 from reversion import revisions as reversion
 
 from base.model_utils import TimeStampedModel
@@ -193,6 +194,7 @@ class MailField(models.Model):
 
     mail = models.ForeignKey(Mail)
     key = models.CharField(max_length=100)
+    is_json = models.BooleanField(default=False)
     value = models.TextField()
 
     class Meta:
@@ -205,6 +207,19 @@ class MailField(models.Model):
             self.mail.email,
             self.key
         )
+
+    @property
+    def data(self):
+        """Return the value of the mail field.
+
+        - return a string if ``is_json`` is ``False``
+        - return a ``dict`` if ``is_json`` is ``True``
+
+        """
+        if self.is_json:
+            return json.loads(self.value)
+        else:
+            return self.value
 
 reversion.register(MailField)
 
