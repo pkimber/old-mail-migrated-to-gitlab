@@ -4,6 +4,7 @@ import factory
 from mail.models import (
     Attachment,
     Mail,
+    MailField,
     MailTemplate,
     Message,
     Notify,
@@ -24,6 +25,21 @@ class MailFactory(factory.django.DjangoModelFactory):
     @factory.sequence
     def email(n):
         return 'mail_{:02d}@test.com'.format(n)
+
+
+class MailFieldFactory(factory.django.DjangoModelFactory):
+    """Create a ``MailField`` instance.
+
+    ::
+
+      message = MessageFactory(content_object=EnquiryFactory())
+      mail = MailFactory(message=message)
+      obj = MailFieldFactory(mail=mail)
+
+    """
+
+    class Meta:
+        model = MailField
 
 
 class MailTemplateFactory(factory.django.DjangoModelFactory):

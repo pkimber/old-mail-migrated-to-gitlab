@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import json
 import logging
 import os
 
@@ -94,7 +95,14 @@ def _check_backends(template_types):
 
 
 def _get_merge_vars(mail_item):
-    result = [(mf.key, mf.value) for mf in mail_item.mailfield_set.all()]
+    """Get the context data for the template.
+
+    .. note:: We retrieve the ``value`` using the ``data`` method.  The
+              ``data`` method will convert ``is_json`` fields to a ``dict``
+              before returning.
+
+    """
+    result = [(mf.key, mf.data) for mf in mail_item.mailfield_set.all()]
     return dict(result)
 
 
@@ -450,7 +458,16 @@ def queue_mail_template(content_object, template_slug, context):
             for key in email_data.keys():
                 value = email_data.get(key, None)
                 if value:
-                    mf = MailField(**dict(mail=mail, key=key, value=value))
+                    is_json = False
+                    if isinstance(value, dict) or isinstance(value, list):
+                        is_json = True
+                        value = json.dumps(value)
+                    mf = MailField(
+                        mail=mail,
+                        key=key,
+                        is_json=is_json,
+                        value=value
+                    )
                     mf.save()
     return message
 

@@ -1,26 +1,17 @@
 # -*- encoding: utf-8 -*-
 import filecmp
+import json
 import os
 import pytest
 
-from unittest import mock
-
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
+from unittest import mock
 
-from example_mail.tests.model_maker import make_enquiry
 from example_mail.base import get_env_variable
-from mail.models import (
-    Mail,
-    MailError,
-    MailTemplate,
-    Message,
-)
-from mail.service import (
-    queue_mail_message,
-    queue_mail_template,
-    send_mail,
-)
+from example_mail.tests.model_maker import make_enquiry
+from mail.models import Mail, MailError, MailField, MailTemplate, Message
+from mail.service import queue_mail_message, queue_mail_template, send_mail
 
 
 def _mail(enquiry):
@@ -155,7 +146,9 @@ def test_queue_mail_message():
         email_address: {
             "name": "Fred",
             "title": "SpaceX",
-            "question": enquiry.description
+            "question": enquiry.description,
+            "dict": {'age': 52, 'colour': 'blue'},
+            "list": [1, 3, 9],
         }
     }
     queue_mail_template(enquiry, template.slug, content_data)
@@ -163,6 +156,18 @@ def test_queue_mail_message():
     mail_item = Mail.objects.get(email=email_address)
     assert message == mail_item.message
     assert enquiry == mail_item.message.content_object
+    # name
+    obj = MailField.objects.get(key='name')
+    assert 'Fred' == obj.value
+    assert obj.is_json is False
+    # dict
+    obj = MailField.objects.get(key='dict')
+    assert obj.is_json is True
+    assert {'age': 52, 'colour': 'blue'} == json.loads(obj.value)
+    # list
+    obj = MailField.objects.get(key='list')
+    assert obj.is_json is True
+    assert [1, 3, 9] == json.loads(obj.value)
 
 
 @pytest.mark.django_db
