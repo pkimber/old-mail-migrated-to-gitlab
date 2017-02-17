@@ -99,7 +99,7 @@ def _get_merge_vars(mail_item):
 
     .. note:: We retrieve the ``value`` using the ``data`` method.  The
               ``data`` method will convert ``is_json`` fields to a ``dict``
-              before returning.
+              or ``list`` before returning.
 
     """
     result = [(mf.key, mf.data) for mf in mail_item.mailfield_set.all()]
@@ -438,6 +438,7 @@ def queue_mail_template(content_object, template_slug, context):
 
     The context is a dict containing email addresses and optionally a
     key, value dict for each email address.
+
     """
 
     template = get_mail_template(template_slug)
