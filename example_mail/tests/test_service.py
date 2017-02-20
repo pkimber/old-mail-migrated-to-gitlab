@@ -11,7 +11,13 @@ from unittest import mock
 from example_mail.base import get_env_variable
 from example_mail.tests.model_maker import make_enquiry
 from mail.models import Mail, MailError, MailField, MailTemplate, Message
-from mail.service import queue_mail_message, queue_mail_template, send_mail
+from mail.service import (
+    _can_use_debug_console,
+    _can_use_mailgun,
+    queue_mail_message,
+    queue_mail_template,
+    send_mail,
+)
 
 
 def _mail(enquiry):
@@ -98,6 +104,31 @@ def _create_goodbye_sparkpost_template():
     )
     goodbye_template.save()
     return goodbye_template
+
+
+@pytest.mark.django_db
+def test_can_use_debug_console(settings):
+    settings.DEBUG = True
+    settings.EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    assert _can_use_debug_console() is True
+
+
+@pytest.mark.django_db
+def test_can_use_debug_console_not(settings):
+    settings.DEBUG = False
+    assert _can_use_debug_console() is False
+
+
+@pytest.mark.django_db
+def test_can_use_mailgun(settings):
+    settings.EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
+    assert _can_use_mailgun() is True
+
+
+@pytest.mark.django_db
+def test_can_use_mailgun_not(settings):
+    settings.EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    assert _can_use_mailgun() is False
 
 
 @pytest.mark.django_db

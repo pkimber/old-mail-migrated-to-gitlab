@@ -43,8 +43,8 @@ def test_init_template_update():
     )
     template = MailTemplate.objects.get(slug='hello')
     assert 'Welcome...' == template.title
-    assert 'a' == template.subject
-    assert 'b' == template.description
+    assert 'c' == template.subject
+    assert 'd' == template.description
 
 
 @pytest.mark.django_db
