@@ -1,56 +1,61 @@
 # -*- encoding: utf-8 -*-
+import pytest
+
 from django.test import TestCase
 
 from mail.models import MailTemplate
 from mail.service import _mail_template_render
 
 
-class TestMailTemplate(TestCase):
+@pytest.mark.django_db
+def test_init_template():
+    MailTemplate.objects.init_mail_template(
+        'hello',
+        'Welcome to our mailing list.',
+        "You can add the {{ name }} variable to this template.",
+        False,
+        MailTemplate.MANDRILL,
+    )
 
-    def test_init_template(self):
-        MailTemplate.objects.init_mail_template(
-            'hello',
-            'Welcome to our mailing list.',
-            "You can add the {{ name }} variable to this template.",
-            False,
-            MailTemplate.MANDRILL,
-        )
 
-    def test_init_template_update(self):
-        MailTemplate.objects.init_mail_template(
-            'hello',
-            'Welcome to our mailing list.',
-            '',
-            False,
-            MailTemplate.DJANGO,
-        )
-        MailTemplate.objects.init_mail_template(
-            'hello',
-            'Welcome...',
-            '',
-            False,
-            MailTemplate.DJANGO,
-        )
-        template = MailTemplate.objects.get(slug='hello')
-        self.assertEqual(template.title, 'Welcome...')
+@pytest.mark.django_db
+def test_init_template_update():
+    MailTemplate.objects.init_mail_template(
+        'hello',
+        'Welcome to our mailing list.',
+        '',
+        False,
+        MailTemplate.DJANGO,
+    )
+    MailTemplate.objects.init_mail_template(
+        'hello',
+        'Welcome...',
+        '',
+        False,
+        MailTemplate.DJANGO,
+    )
+    template = MailTemplate.objects.get(slug='hello')
+    assert 'Welcome...' == template.title
 
-    def test_render(self):
-        template = MailTemplate.objects.init_mail_template(
-            'hello',
-            'Welcome to our mailing list.',
-            (
-                "You can add the following variables to the template:\n"
-                "{{ name }} name of the customer.\n"
-                "{{ title }} name of the village.",
-            ),
-            False,
-            MailTemplate.DJANGO,
-        )
-        template.subject = 'Hello {{ name }}'
-        template.description = 'Welcome to {{ title }}'
-        template.save()
-        subject, description = _mail_template_render(
-            'hello', dict(name='Patrick', title='Hatherleigh')
-        )
-        self.assertEqual('Hello Patrick', subject)
-        self.assertEqual('Welcome to Hatherleigh', description)
+
+@pytest.mark.django_db
+def test_render():
+    template = MailTemplate.objects.init_mail_template(
+        'hello',
+        'Welcome to our mailing list.',
+        (
+            "You can add the following variables to the template:\n"
+            "{{ name }} name of the customer.\n"
+            "{{ title }} name of the village.",
+        ),
+        False,
+        MailTemplate.DJANGO,
+    )
+    template.subject = 'Hello {{ name }}'
+    template.description = 'Welcome to {{ title }}'
+    template.save()
+    subject, description = _mail_template_render(
+        'hello', dict(name='Patrick', title='Hatherleigh')
+    )
+    assert 'Hello Patrick' == subject
+    assert 'Welcome to Hatherleigh' == description
