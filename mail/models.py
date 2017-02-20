@@ -47,8 +47,12 @@ class MailTemplateManager(models.Manager):
             obj.is_html = is_html
             obj.is_system = is_system or False
             obj.template_type = template_type
-            obj.subject = subject or ''
-            obj.description = description or ''
+            # don't overwrite subject if it already exists
+            if not obj.subject:
+                obj.subject = subject or ''
+            # don't overwrite description if it already exists
+            if not obj.description:
+                obj.description = description or ''
             obj.save()
         except self.model.DoesNotExist:
             obj = self.create_mail_template(
