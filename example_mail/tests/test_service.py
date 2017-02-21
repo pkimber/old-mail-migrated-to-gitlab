@@ -14,6 +14,7 @@ from mail.models import Mail, MailError, MailField, MailTemplate, Message
 from mail.service import (
     _can_use_debug_console,
     _can_use_mailgun,
+    _can_use_smtp,
     queue_mail_message,
     queue_mail_template,
     send_mail,
@@ -129,6 +130,12 @@ def test_can_use_mailgun(settings):
 def test_can_use_mailgun_not(settings):
     settings.EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     assert _can_use_mailgun() is False
+
+
+@pytest.mark.django_db
+def test_can_use_smtp(settings):
+    settings.EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    assert _can_use_smtp() is True
 
 
 @pytest.mark.django_db

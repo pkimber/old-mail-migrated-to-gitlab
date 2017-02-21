@@ -84,6 +84,10 @@ def _can_use_mandrill():
     return result
 
 
+def _can_use_smtp():
+    return 'smtp.EmailBackend' in settings.EMAIL_BACKEND
+
+
 def _can_use_sparkpost():
     api_key = None
     result = False
@@ -108,6 +112,8 @@ def _check_backends(template_types):
                 _using_sparkpost()
             elif _can_use_mailgun():
                 _using_mailgun()
+            elif _can_use_smtp():
+                pass
             elif _can_use_debug_console():
                 pass
             else:
