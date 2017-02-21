@@ -230,6 +230,7 @@ def _send_mail_django_template(m):
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[m.email],
     )
+    msg.body = description
     if m.message.template.is_html:
         merge_vars['is_html'] = True
         _, html_description = _mail_template_render(
@@ -238,8 +239,6 @@ def _send_mail_django_template(m):
         )
         msg.attach_alternative(html_description, "text/html")
         msg.auto_text = True
-    else:
-        msg.body = description
     msg.send()
 
 
