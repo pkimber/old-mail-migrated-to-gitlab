@@ -24,6 +24,8 @@ try:
 except ImportError:
     class MandrillAPIError(Exception):
         pass
+    class MandrillRecipientsRefused(Exception):
+        pass
 try:
     from sparkpost import SparkPostAPIException
 except ImportError:
@@ -48,6 +50,24 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _can_use_debug_console():
+    result = False
+    if settings.DEBUG:
+        result = 'console.EmailBackend' in settings.EMAIL_BACKEND
+    return result
+
+
+def _can_use_mailgun():
+    result = False
+    if 'MailgunBackend' in settings.EMAIL_BACKEND:
+        try:
+            server_name = settings.MAILGUN_SERVER_NAME
+            result = bool(server_name)
+        except AttributeError:
+            pass
+    return result
 
 
 def _can_use_mandrill():
@@ -86,8 +106,12 @@ def _check_backends(template_types):
                 _using_mandrill()
             elif _can_use_sparkpost():
                 _using_sparkpost()
-            else:
+            elif _can_use_mailgun():
                 _using_mailgun()
+            elif _can_use_debug_console():
+                pass
+            else:
+                raise MailError("No service available for sending mail")
         elif t == MailTemplate.MANDRILL:
             _using_mandrill()
         elif t == MailTemplate.SPARKPOST:
@@ -196,6 +220,7 @@ def _send_mail_simple(m):
 
 def _send_mail_django_template(m):
     merge_vars = _get_merge_vars(m)
+    merge_vars['is_html'] = False
     subject, description = _mail_template_render(
         m.message.template.slug,
         merge_vars,
@@ -205,11 +230,15 @@ def _send_mail_django_template(m):
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[m.email],
     )
+    msg.body = description
     if m.message.template.is_html:
-        msg.attach_alternative(description, "text/html")
+        merge_vars['is_html'] = True
+        _, html_description = _mail_template_render(
+            m.message.template.slug,
+            merge_vars,
+        )
+        msg.attach_alternative(html_description, "text/html")
         msg.auto_text = True
-    else:
-        msg.body = description
     msg.send()
 
 
