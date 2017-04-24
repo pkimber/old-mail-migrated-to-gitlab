@@ -184,9 +184,10 @@ def _mail_send(m):
         SparkPostAPIException
     ) as e:
         if hasattr(e, 'message'):
-            logger.error(e.message)
+            e_msg = e.message
         else:
-            logger.error(e)
+            e_msg = e
+        logger.error("{} ({}): {}".format(m.message, m.pk, e_msg))
         retry_count = m.retry_count or 0
         m.retry_count = retry_count + 1
     m.save()
