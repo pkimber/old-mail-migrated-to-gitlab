@@ -27,7 +27,7 @@ except ImportError:
     class MandrillRecipientsRefused(Exception):
         pass
 try:
-    from sparkpost import SparkPostAPIException
+    from sparkpost.exceptions import SparkPostAPIException
 except ImportError:
     class SparkPostAPIException(Exception):
         pass
