@@ -27,10 +27,10 @@ setup(
             'templates/mail/*.*',
         ],
     },
-    version='0.1.49',
+    version='0.1.50',
     description='mail',
-    author='Patrick Kimber',
-    author_email='code@pkimber.net',
+    author='Malcolm Dinsmore',
+    author_email='code-md@kbsoftware.co.uk',
     url='git@github.com:pkimber/mail.git',
     classifiers=[
         'Development Status :: 1 - Planning',
